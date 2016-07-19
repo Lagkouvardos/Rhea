@@ -1,9 +1,8 @@
-# Rhea
+![Rhea Logo](http://i.imgur.com/jjLmZF5.png)
 
 ### A list of R scripts for the analysis of microbial profiles
 
 
-![Rhea logo](http://prntscr.com/bur7pa)
 
 ##Introduction
 
