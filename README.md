@@ -6,7 +6,7 @@
 
 ##Introduction
 
-The importance of 16S rRNA gene amplicon profiles for understanding the influence of microbes in a variety of environments coupled with the steep reduction in sequencing costs led to a surge of microbial sequencing projects. The expanding crowd of scientists and clinicians wanting to make use of sequencing datasets can choose among a range of multipurpose software platforms, the use of which can be intimidating for non-expert users. Among available pipeline options for high-throughput 16S rRNA gene analysis, the R programming language and software environment for statistical computing stands out for its power and increased flexibility, and the possibility to adhere to most recent best practices and to adjust to individual project needs. Here we present the Rhea pipeline, a set of R scripts that encode a series of well-documented choices for the downstream analysis of Operational Taxonomic Units (OTUs) tables, including normalization steps, alpha- and beta-diversity analysis, taxonomic composition, statistical comparisons, and calculation of correlations. Rhea is primarily a straightforward starting point for beginners, but can also be a framework for advanced users who can modify and expand the tool. As the community standards evolve, Rhea will adapt to always represent the current state-of-the-art in microbial profiles analysis in the clear and comprehensive way allowed by the R language.  
+The importance of 16S rRNA gene amplicon profiles for understanding the influence of microbes in a variety of environments coupled with the steep reduction in sequencing costs led to a surge of microbial sequencing projects. The expanding crowd of scientists and clinicians wanting to make use of sequencing datasets can choose among a range of multipurpose software platforms, the use of which can be intimidating for non-expert users. Among available pipeline options for high-throughput 16S rRNA gene analysis, the R programming language and software environment for statistical computing stands out for its power and increased flexibility, and the possibility to adhere to most recent best practices and to adjust to individual project needs. Here we present the Rhea pipeline, a set of R scripts that encode a series of well-documented choices for the downstream analysis of Operational Taxonomic Unit (OTU) tables, including normalization steps, alpha- and beta-diversity analysis, taxonomic composition, statistical comparisons, and calculation of correlations. Rhea is primarily a straightforward starting point for beginners, but can also be a framework for advanced users who can modify and expand the tool. As the community standards evolve, Rhea will adapt to always represent the current state-of-the-art in microbial profiles analysis in the clear and comprehensive way allowed by the R language.  
 
 ## Description
 
@@ -21,21 +21,21 @@ Rhea is composed of 6 steps that can be run independently or as a set.
 5. Serial-Group-Comparisons
 6. Correlations
 
-Running them in the given order simplify the process as the output of each step is often the input of the next. There is an extra folder where the original data is recommended to be placed to keep the analysis of one study in a compact and organized structure. Inside the 0.Original-Data folder there is another folder containing the template files used for the Rhea presentation that can be used for exploring the different steps of Rhea. For a quick and effective way to obtain OTU-tables and other required files for further analysis in Rhea, when starting from raw sequencing data, please use the analysis functionality of IMNGS (www.imngs.org). The output of the UPARSE based clustering of sequences to OTUs is fully compatible with Rhea scripts. Before running any script make sure you read and fully understand the corresponding ReadMe file that can be found in each folder.
+Running them in the given order simplifies the process as the outputs of each step are often the inputs of the next. There is also an extra folder where the original data is recommended to be placed to keep the analysis of one study in a compact and organized structure. Inside the 0.Original-Data folder, there is another folder containing the template files that served as basis for the Rhea presentation that can be used for training purposes. For a quick and effective way to obtain OTU-tables and other required files for analysis in Rhea, when starting from raw sequencing data, please use the analysis functionality of IMNGS (www.imngs.org). The output of the UPARSE-based clustering (Edgar, 2013) of sequences to OTUs is fully compatible with the Rhea scripts. Before running any script, please make sure you have read and fully understood the corresponding ReadMe file that can be found in each folder.
 
 ###Script structure
 
-All R scripts in Rhea follow a common structure design to help users orient and accelerate usage. Therefore every script would have a Commentary, Initialization and Main sections, Those are explained in detail bellow.
+All R scripts in Rhea follow a common structure designed to help easy implementation by users. Therefore, each script contains a Commentary, Initialization, and Main section. These sections are explained in detail below:
 
 #### Commentary section
-These are comments lines that add no functionality to the script but they exist to help the user understand the concept of the script and guide him through the script requirements. The user targeting comments start with the hash sign and are followed by a back-tick (#`) to be distinguished from ordinary R commands annotation lines starting with a hash (#) intended for advanced users. We suggest all users to read the introductory and usage commends in all scripts they use. An example of those commends can be seen bellow:
+It contains short comment lines that add no functionality to the script but should help users understanding the concept of the script and guide them briefly through the script requirements. User-targeting comments start with a hash sign followed by a back-tick (#`); ordinary R commands annotation lines throughpout the scripts start with a hash sign only (#) and are for advanced users. We recommend that all users read the introductory and usage comments in all scripts before use. An example of those comments can be seen bellow:
 
 	#' Version 1.6
 	#' This script was last modified on 11/02/2016
 	#' Script Task: Normalize OTU tables
 	#'
 	#' Normalize abundance values of the input OTU table
-	#' calculate relative abundances for all OTUs based on normalized values
+	#' Calculate relative abundances for all OTUs based on normalized values
 	#' 
 	#' Input: Please enter following parameters
 	#' 1. Set the path to the directory where the file is stored
@@ -59,7 +59,7 @@ These are comments lines that add no functionality to the script but they exist 
 	#' If original folder structure is maintained.
 
 #### Initialization section
-In this section the required and optional parameters necessary for the execution of the script are presented to the user and he is requested to change them accordingly. One common setting that needs to change in every script is the path where the script resides. This is important in order to keep all relevant files in the respective folders and avoid overwriting or confusion. Therefore all required files need to be placed within the folder of the script. Unless Rhea users want to modify the scripts no changes are needed after this section and the user can select the whole script and run it.  An example of this section can be seen bellow:
+In this section, the required and optional parameters necessary for execution of the scripts are presented to the users, who are requested to change them accordingly. One common setting that must be changed in every script is the path where the script and input files are located. It is important to keep all relevant files in the respective folders to avoid overwriting and confusions. Unless expert users want to customize the scripts, no changes are needed after this initialization section, and users can select the whole script and run it. An example of such a section can be seen below:
 
 	##################################################################################
 	######             Set parameters in this section manually                  ######
@@ -95,14 +95,14 @@ This is where the actual R commands start and based on the variables set by the 
 	taxonomy <- as.vector(otu_table$taxonomy)
 
 ### Requirements
-In order to run the scripts is important to have the R language and environment installed first [(available here)](https://www.r-project.org/ "R download site"). We strongly recommend the usage of the R-studio to simplify usage and enhance productivity [(available here)](https://www.rstudio.com/products/rstudio-desktop/ "R-studio download site"). Required packages would be automatically installed the first time the scripts are run so internet connection at least for the first time is expected. The scripts are platform independent and should work in all systems that support R.
+In order to run the scripts, it is important to have the R language and environment installed first [(available here)](https://www.r-project.org/ "R download site"). We strongly recommend using the R-studio to simplify implementation and enhance productivity [(available here)](https://www.rstudio.com/products/rstudio-desktop/ "R-studio download site"). Required packages will be automatically installed the first time the scripts are run. Hence, internet connection is required at least for first use. The scripts are platform independent and should work in all systems that support R.
 
 
 ### Installation
-No installation is required for Rhea. After downloading the Rhea project, decompress the files in the desired destination and they are ready to use. We recommend to keep one copy of Rhea files in each study to avoid mix ups and to look from time to time for new and improved versions of Rhea scripts as the project, as all living things, will evolve. 
+No installation is required for Rhea. After downloading the Rhea project, decompress the files in the desired destination and they are ready to use. We recommend keeping one copy of the Rhea files in each study to avoid mixing up different analyses. We also recommend looking for new and improved versions of Rhea from time to time as the project, as all living entities, will evolve. 
 
 ### Citation
 
-If you use Rhea in your work please cite/attribute the original publication:
+If you use Rhea in your work, please cite the original publication:
 
 Lagkouvardos I., Fisher S., Kumar N., Clavet T. (2016) Rhea: A transparent and modular R pipeline for microbial profiling based on 16S rRNA gene amplicons. In review
