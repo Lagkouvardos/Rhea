@@ -324,8 +324,8 @@ for (i in dependant_variables_start:dim(input_table)[2])
   
   # Function to assign corrected and not-corrected pvalues  
   if (fail) {
-    my_pvalue <- 0
-    my_corrected_pvalue <- 0
+    my_pvalue <- NaN
+    #my_corrected_pvalue <- 0
     fail <- FALSE
   } else {
    
@@ -370,67 +370,63 @@ for (i in dependant_variables_start:dim(input_table)[2])
   # Save the corrected p-value
   cpvalue <- df[count,4]
   count <- count + 1
-  if (is.nan(pvalue)){
-  next
-  } 
-
-  # The analysis is only applied if there is at least one observation per group for the dependant variable/OTU
-  # Otherwise no statistical analysis is applied and no plots are generated
-  for (j in 1:ncol(idx)) {
-    
-    # There is at least one value per group 
-    # Independent of the combinations of groups
-    if (!((all(is.na(my_test_vector[as.numeric(independent_variable) == idx[1, j]])))|(all(is.na(my_test_vector[as.numeric(independent_variable) == idx[2, j]]))))& flag==TRUE) {
-      flag = TRUE
-    } else {
-      # If one group has no value, the flag is set to FALSE and no calculations are applied to the variable/OTU
-      flag = FALSE
-    }
-    
+  signif_pairs = data.frame( measure = as.character(),name = as.character(),Group1 = as.character(),Group2 = as.character(),ppvalue = as.numeric())
+ 
+   # Get the names of all group combinations
+  idx_name <- combn(levels(independent_variable), 2)
+  
+  # If a pvalue is calculated out of the Kruskal Walis Test, the pairwise Wilcos Rank Test will be computed as well 
+  if (!is.nan(pvalue)){
+    if (pvalue <= 0.05){
+     # Compute p-values from Wilcoxon test for all comparisons
+      ppval_res <- numeric(ncol(idx))
+      
+      # Create an empty dataframe to hold the results of pairwise comparison 
+      pair_pval_table <-data.frame(measure = character(0),pair = character(0),Group1 = character(0),Group2 = character(0),pvalue = numeric(0),corrected = numeric(0))
+      pair_pval_table <- rbind(pair_pval_table,data.frame( measure = my_name,name = "All",Group1 = " -",Group2 = "- ",ppvalue = pvalue, corrected = cpvalue))
+      # Compute p-values of Wilcoxon test for all comparisons
+      for (i in 1:ncol(idx)){
+        # Performs a Kruskal-Wallis rank sum test
+        fit <- tryCatch (wilcox.test(my_test_vector[as.numeric(independent_variable) == idx[1,i]],my_test_vector[as.numeric(independent_variable) == idx[2,i]]),error = function(i) {fail <<- TRUE})
+        # Function to assign corrected and not-corrected pvalues  
+        if (fail) {
+          ppval_res[i] <- NaN
+          #my_corrected_pvalue <- 0
+          fail <- FALSE
+        } else {
+          # Round the p-value down to four decimals 
+          ppval_res[i] <- round(fit$p.value,4)
+        }
+        # Calculate p-value
+        #ppval_res[i] <- wilcox.test(my_test_vector[as.numeric(independent_variable) == idx[1,i]],my_test_vector[as.numeric(independent_variable) == idx[2,i]])$p.value
+        
+        # Set the values of the pair and the corresponding p-value
+        pair_name <- paste (idx_name[1,i],"-", idx_name[2,i],  sep = "")
+        pair_num <- paste (idx[1,i],"-", idx[2,i],  sep = "")
+        ppval <- round(ppval_res[i],4)
+        
+        # Create and add a new column to the plot table and the overall pairwise comparison table
+        newRow <- data.frame( measure = my_name,name = pair_num,Group1 = idx_name[1,i],Group2 = idx_name[2,i],ppvalue = ppval, corrected=0)
+        pair_pval_table <- rbind(pair_pval_table,newRow)
+      } 
+      
+      # Add the corrected p-values column to the dataframe
+      pair_pval_table$corrected[-1] <- round(p.adjust(pair_pval_table$ppvalue[-1], method = "BH"),4)
+      Pforplot_table <- pair_pval_table[,c(-3,-4)]
+      
+      # Add the table with the corrected p-values to the complete list of pairwise p-values for all tests
+      all_pair_pval_table <- rbind(all_pair_pval_table,pair_pval_table) 
+      
+      # Determine which groups are significantly different based on the results of the Wilcoxon test
+      signif_pairs <- Pforplot_table[(Pforplot_table$ppvalue < 0.05) & !(is.na(Pforplot_table$ppvalue)),]
+   } 
   }
+
 
   # Applying condition if missing group is TRUE and p-value is <0.05
   # If the first condition is true, the second condition is not checked
   # Generate all pairwise comparisons
-  if (flag & ((pvalue <= 0.05 & pvalue > 0) || (missing_group == TRUE))){
-    
-    # Get the names of all group combinations
-    idx_name <- combn(levels(independent_variable), 2)
-    
-    # Compute p-values from Wilcoxon test for all comparisons
-    ppval_res <- numeric(ncol(idx))
-    
-    # Create an empty dataframe to hold the results of pairwise comparison 
-    pair_pval_table <-data.frame(measure = character(0),pair = character(0),Group1 = character(0),Group2 = character(0),pvalue = numeric(0),corrected = numeric(0))
-    pair_pval_table <- rbind(pair_pval_table,data.frame( measure = my_name,name = "All",Group1 = " -",Group2 = "- ",ppvalue = pvalue))
-    
-    # Compute p-values of Wilcoxon test for all comparisons
-    for (i in 1:ncol(idx))
-    {
-      
-      # Calculate p-value
-      ppval_res[i] <- wilcox.test(my_test_vector[as.numeric(independent_variable) == idx[1,i]],my_test_vector[as.numeric(independent_variable) == idx[2,i]])$p.value
-      
-      # Set the values of the pair and the corresponding p-value
-      pair_name <- paste (idx_name[1,i],"-", idx_name[2,i],  sep = "")
-      pair_num <- paste (idx[1,i],"-", idx[2,i],  sep = "")
-      ppval <- round(ppval_res[i],4)
-      
-      # Create and add a new column to the plot table and the overall pairwise comparison table
-      newRow <- data.frame( measure = my_name,name = pair_num,Group1 = idx_name[1,i],Group2 = idx_name[2,i],ppvalue = ppval)
-      pair_pval_table <- rbind(pair_pval_table,newRow)
-    } 
-    
-    # Add the corrected p-values column to the dataframe
-    pair_pval_table$corrected <- round(p.adjust(pair_pval_table$ppvalue, method = "BH"),4)
-    Pforplot_table <- pair_pval_table[,c(-3,-4)]
-    
-    # Add the table with the corrected p-values to the complete list of pairwise p-values for all tests
-    all_pair_pval_table <- rbind(all_pair_pval_table,pair_pval_table) 
-    
-    # Determine which groups are significantly different based on the results of the Wilcoxon test
-    signif_pairs <- Pforplot_table[(Pforplot_table$ppvalue < 0.05) & !(is.na(Pforplot_table$ppvalue)),]
-    
+  
     # If zeros are replaced by missing values, the prevalence and the points to be plotted are the same (number of samples with a value >0)
     # If zeros are not replaced and considered as true values, the prevalence is as above, but zeros are going to be plotted in the graphs
     if (ReplaceZero == "YES") {
@@ -445,199 +441,246 @@ for (i in dependant_variables_start:dim(input_table)[2])
       plot_df_prevalence$samplekaname <- row.names(input_table)
     }
     
-    # Generate label for the X-axis
-    labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
-    plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""))
-    x = x + 1
   
-    # Determine label of the y-axis
-    if ((dependant_variables_start+(count-2)) < taxonomic_variables_start) {
-      labelsy <- my_name
-    } else{
-      labelsy <- "Relative abundance (%)"
-    }
-    
-    # Create a ggplot object of the plotted layout (including axis labels and scaling)
-    g <-ggplot(plot_df,aes(x = xlabeltext,y = abundance)) 
-    
-    # Generate plot dependent on given PlotOption
-    if (PlotOption == 1) {
-      my_boxplot <- g + stat_boxplot(geom = "errorbar", width = 0.25) + geom_boxplot(varwidth = FALSE,width = 0.7)
-      my_violinplot <- g + geom_violin(width = 0.7) + geom_boxplot(width = 0.1)
-      my_point_boxplot <- g + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7)
-    } else if (PlotOption == 2) {
-      my_boxplot <- g + stat_boxplot(geom = "errorbar", width = 0.25) + geom_boxplot(varwidth = FALSE,width = 0.7) + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7)
-      my_violinplot <- g + geom_violin(width = 0.7) + geom_boxplot(width = 0.1) + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5)
-      my_point_boxplot <-g + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5)
-    }else if (PlotOption == 3) {
-      my_boxplot <- g + stat_boxplot(geom = "errorbar", width = 0.25) + geom_boxplot(varwidth = FALSE,width = 0.7) + 
-        geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7) + 
-        geom_label_repel(aes(xlabeltext, abundance, fill = NULL, label = samplekaname),fontface = 'bold', color = 'black',box.padding = unit(0.25, "lines"),point.padding = unit(0.5, "lines"),size = 2)
-      my_violinplot <-g + geom_violin(width = 0.7) + geom_boxplot(width = 0.1) + 
-        geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7) + geom_label_repel(aes(xlabeltext, abundance, fill = NULL, label = samplekaname),
-                                                                                    fontface = 'bold', color = 'black',box.padding = unit(0.25, "lines"),
-                                                                                    point.padding = unit(0.5, "lines"),size = 2)
-      my_point_boxplot <-g + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7) + geom_label_repel(aes(xlabeltext, abundance, fill = NULL, label = samplekaname),
-          fontface = 'bold', color = 'black',box.padding = unit(0.25, "lines"),point.padding = unit(0.5, "lines"), size = 2)
-    }
-    
-    my_boxplot <-my_boxplot + ggtitle(my_name) + guides(fill = FALSE) + ylab(labelsy) + xlab("") + theme_bw() + theme(axis.text.x = element_text(colour = "grey20",size = 12,angle = 45,hjust = 1,vjust = 1,face = "plain"),
-        axis.text.y = element_text(colour = "grey20",size = 12,angle = 0,hjust = 1,vjust = 0,face = "plain"),axis.title.y = element_text(colour = "grey20",size = 14,angle = 90,hjust = .5,vjust = .5,face = "plain"),
-        plot.title = element_text(colour = "grey22",size = 18,hjust = .5,vjust = .5,face = "bold")) + theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"))
-    
-    my_violinplot <-my_violinplot + ggtitle(my_name) + ylab(labelsy) + guides(fill = FALSE) + xlab("") + theme_bw() +theme(axis.text.x = element_text(colour = "grey20",size = 12,angle = 45,hjust = 1,vjust = 1,face = "plain"),
-        axis.text.y = element_text(colour = "grey20",size = 12,angle = 0,hjust = 1,vjust = 0,face = "plain"),axis.title.y = element_text(colour = "grey20",size = 14,angle = 90,hjust = .5,vjust = .5,face = "plain"),
-        plot.title = element_text(colour = "grey22",size = 18,hjust = .5,vjust = .5,face = "bold")) + theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"))
-    
-    my_point_boxplot <- my_point_boxplot + ggtitle(my_name) + theme_bw() + ylab(labelsy) +stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,geom = "crossbar", width = 0.5) +
-      guides(fill = FALSE) + xlab("") + theme(legend.position = "none") + guides(colour = FALSE) + theme( axis.text.x = element_text(colour = "grey20",size = 12,angle = 45,hjust = 1,vjust =1,face = "plain"),
-        axis.text.y = element_text(colour = "grey20",size = 12,angle = 0,hjust = 1,vjust = 0,face = "plain"),axis.title.y = element_text(colour = "grey20",size = 14,angle = 90,hjust = .5,vjust = .5,face = "plain"),
-        plot.title = element_text(colour = "grey22",size = 18,hjust = .5,vjust = .5,face = "bold")) + theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"))
-   
-    # Save the boxplot object in the list
-    list_box[[x]] <- list()
-    list_box[[x]] <- my_boxplot
-    
-    # Save the boxplot with points object in the list
-    list_point[[x]] <- list()
-    list_point[[x]] <- my_point_boxplot
-    
-    # Save the violin object in the list
-    list_violin[[x]] <- list()
-    list_violin[[x]] <- my_violinplot
-    
     # Calculate prevalence by counting presence or absence of the given variable in each group
-    prevalence <- table(plot_df_prevalence[!is.na(plot_df_prevalence[,1]),2])
-   
+     prevalence <- table(plot_df_prevalence[!is.na(plot_df_prevalence[,1]),2])
+  
     # Count how many samples are absent from total number of counts
-    not_found <- total - prevalence 
-    pre_table <- cbind(prevalence,not_found,total)
-
-    # Make a list object to store all "prevalence table" to print in PDF
-    texttable[[x]] <- list()
-    
-    # Creat a gtable containing text grobs representing a character matrix
-    # "mytheme" is a text theme defined at the begining
-    texttable[[x]] <- tableGrob(pre_table,theme = mytheme)
-    
-    # Define the title of the tables
-    title <- textGrob("Prevalence table",gp = gpar(fontsize = 7))
-    padding <- unit(3,"mm")
-    texttable[[x]] <- gtable_add_rows(texttable[[x]], heights = grobHeight(title) + padding, pos = 0)
-    texttable[[x]] <- gtable_add_grob(texttable[[x]], title, 1, 1, 1, ncol(texttable[[x]]))
-    
-    # Calculate a two-sided Fisher's test 
-    Fishtest <- fisher.test(pre_table[,-3],alternative = "two.sided")
-    
-    # Save the p-value of the Fisher's test
-    fish_pvalue <- round(Fishtest$p.value,4)
-    FnewRow <- data.frame(name = my_name,pvalue = fish_pvalue)
-    Fdf <- rbind(Fdf,FnewRow)
-    fppval_res <- numeric(ncol(idx))
-    
-    # Create an empty dataframe to hold the results of pairwise comparison for pairwise Fisher's Test
-    pair_fpval_table <- data.frame(measure = character(0),name = character(0),Group1 = character(0),Group2 = character(0),pvalue = numeric(0),corrected = numeric(0))
-    
-    # Compute p-values from Wilcoxon test for all comparisons
-    for (i in 1:ncol(idx))
-    {
-      pret <- as.data.frame(pre_table)
-      pretrowbind <-rbind(pret[idx_name[1,i],-3],pret[idx_name[2,i],-3])
-      
-      # Compute two-sided Fisher's test
-      fppval_res[i] <- fisher.test(pretrowbind,alternative = "two.sided")$p.value
-      
-      # Set values of the pair and corresponding p-value
-      # Take variable name as "A-B"
-      pair_name <- paste (idx_name[1,i],"-", idx_name[2,i],  sep = "")
-      
-      # Take variable name as "1-2"
-      pair_num <- paste (idx[1,i],"-", idx[2,i],  sep = "")
-      
-      # Round the p-value to four decimals
-      fppval <- round(fppval_res[i],4)
-      
-      # Create and add a new line to the plot table and the overall pairwise comparison table
-      newRow <- data.frame(measure = my_name,name = pair_num,Group1 = idx_name[1,i],Group2 = idx_name[2,i],ppvalue = fppval)
-      pair_fpval_table <- rbind(pair_fpval_table,newRow)
-    } 
-    
-    # Applying Benjamini-Hochberg (1995) correction 
-    # Add a column with the corrected p-values 
-    pair_fpval_table$corrected <- round(p.adjust(pair_fpval_table$ppvalue, method = "BH"),4)
-    
-    # Add the table with corrected p-values to the complete list of pairwise p-values for all tests
-    all_pair_fpval_table <- rbind(all_pair_fpval_table,pair_fpval_table) 
-    
-    # Make an object of "measure", "name", "p-value", "corrected" to print in PDF
-    Fforplot_table <- pair_fpval_table[,c(-3,-4)]
-    
-    # Test whether the test is significant or not
-    # If significant, then get value in "signif_fpairs"
-    signif_fpairs <-Fforplot_table[(Fforplot_table$ppvalue <= 0.5) & !(is.na(Fforplot_table$ppvalue)),]
-    
-    # Test for the case that there are no significant pairs
-    # Check whether Fisher test is significant or not
-    if (!is.na(signif_fpairs[1,1])) {
-      signif_fpairs$measure <- as.character(signif_fpairs$measure)
-      signif_fpairs$name <- as.character(signif_fpairs$name)
-      colnames(signif_fpairs) <-c("Species","Groups","P-value","Adj. p-value")
-      fpvaltable[[x]] <- list()
-      # Pavlue table for significant pairs
-      fpvaltable[[x]] <- tableGrob(signif_fpairs[2:4],rows = NULL,theme = mytheme)
-      title <- textGrob("Fisher's Exact Test - pairwise",gp = gpar(fontsize = 9))
-      padding <- unit(3,"mm")
-      fpvaltable[[x]] <- gtable_add_rows(fpvaltable[[x]], heights = grobHeight(title) + padding,pos = 0)
-      fpvaltable[[x]] <- gtable_add_grob(fpvaltable[[x]], title, 1, 1, 1, ncol(fpvaltable[[x]]))
-      
-    }
-    
-    # Check whether Kruskal-Wallis test is significant or not
-    if (!is.na(signif_pairs[1,1])) {
-      signif_pairs$measure <- as.character(signif_pairs$measure)
-      signif_pairs$name <- as.character(signif_pairs$name)
-      colnames(signif_pairs) <-c("Species","Groups","P-value","Adj. p-value")
-      pvaltable[[x]] <- list()
-      pvaltableAll[[x]] <- list()
-      
-      # Pvalue table for significant pairs
-      signif_all <- signif_pairs[1,c(1,3,4)]
-      if(dim(signif_pairs)[1] > 1) {
-        signif_pairs <- signif_pairs[2:dim(signif_pairs)[1],]
-        pvaltable[[x]] <-tableGrob(signif_pairs[2:4],rows = NULL,theme = mytheme)
+     not_found <- total - prevalence 
+     pre_table <- cbind(prevalence,not_found,total)
+  
+     # Calculate a two-sided Fisher's test 
+     Fishtest <- fisher.test(pre_table[,-3],alternative = "two.sided")
+     
+     # Save the p-value of the Fisher's test
+     fish_pvalue <- round(Fishtest$p.value,4)
+     FnewRow <- data.frame(name = my_name,pvalue = fish_pvalue)
+     Fdf <- rbind(Fdf,FnewRow)
+     fppval_res <- numeric(ncol(idx))
+     
+     # Create an empty dataframe to hold the results of pairwise comparison for pairwise Fisher's Test
+     pair_fpval_table <- data.frame(measure = character(0),name = character(0),Group1 = character(0),Group2 = character(0),pvalue = numeric(0),corrected = numeric(0))
+     
+     # Compute p-values from Wilcoxon test for all comparisons
+     for (i in 1:ncol(idx))
+     {
+       pret <- as.data.frame(pre_table)
+       pretrowbind <-rbind(pret[idx_name[1,i],-3],pret[idx_name[2,i],-3])
        
-       # Title of tables in the PDF
-        title <- textGrob("Wilcoxon Rank Sum Test - pairwise",gp = gpar(fontsize = 9))
-        padding <- unit(2,"mm")
-        pvaltable[[x]] <- gtable_add_rows(pvaltable[[x]], heights = grobHeight(title) + padding,pos = 0)
-        pvaltable[[x]] <- gtable_add_grob(pvaltable[[x]], title, 1, 1, 1, ncol(pvaltable[[x]]))
-      }
-      colnames(signif_all) <-c(" ","P-value","Adj. p-value")
-      pvaltableAll[[x]] <- tableGrob(signif_all,rows = NULL,theme = mytheme)
-      title <- textGrob("Kruskal-Wallis Rank Sum Test - all groups ",gp = gpar(fontsize = 9))
-      padding <- unit(2,"mm")
-      pvaltableAll[[x]] <- gtable_add_rows(pvaltableAll[[x]], heights = grobHeight(title) + padding,pos = 0)
-      pvaltableAll[[x]] <- gtable_add_grob(pvaltableAll[[x]], title, 1, 1, 1, ncol(pvaltableAll[[x]]))
-    }
-  }
+       # Compute two-sided Fisher's test
+       fppval_res[i] <- fisher.test(pretrowbind,alternative = "two.sided")$p.value
+       
+       # Set values of the pair and corresponding p-value
+       # Take variable name as "A-B"
+       pair_name <- paste (idx_name[1,i],"-", idx_name[2,i],  sep = "")
+       
+       # Take variable name as "1-2"
+       pair_num <- paste (idx[1,i],"-", idx[2,i],  sep = "")
+       
+       # Round the p-value to four decimals
+       fppval <- round(fppval_res[i],4)
+       
+       # Create and add a new line to the plot table and the overall pairwise comparison table
+       newRow <- data.frame(measure = my_name,name = pair_num,Group1 = idx_name[1,i],Group2 = idx_name[2,i],ppvalue = fppval)
+       pair_fpval_table <- rbind(pair_fpval_table,newRow)
+     } 
+     
+     # Applying Benjamini-Hochberg (1995) correction 
+     # Add a column with the corrected p-values 
+     pair_fpval_table$corrected <- round(p.adjust(pair_fpval_table$ppvalue, method = "BH"),4)
+     
+     # Add the table with corrected p-values to the complete list of pairwise p-values for all tests
+     all_pair_fpval_table <- rbind(all_pair_fpval_table,pair_fpval_table) 
+     
+     # Make an object of "measure", "name", "p-value", "corrected" to print in PDF
+     Fforplot_table <- pair_fpval_table[,c(-3,-4)]
+     
+     # Test whether the test is significant or not
+     # If significant, then get value in "signif_fpairs"
+     signif_fpairs <-Fforplot_table[(Fforplot_table$ppvalue <= 0.05) & !(is.na(Fforplot_table$ppvalue)),]
+     
+     
+     # Check if at least one of the tests (Kruskal Walis or Fisher) is signficant 
+     # If at least one of them is signficant a plot will be generated
+     if (fish_pvalue <= 0.05 || (pvalue <= 0.05 & !is.nan(pvalue))) {
+       print(paste(my_name," ", fish_pvalue, x))
+       # Generate label for the X-axis
+       labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
+       plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""))
+       x = x + 1
+       
+       # Determine label of the y-axis
+       if ((dependant_variables_start+(count-2)) < taxonomic_variables_start) {
+         labelsy <- my_name
+       } else{
+         labelsy <- "Relative abundance (%)"
+       }
+       # Create a ggplot object of the plotted layout (including axis labels and scaling)
+       g <-ggplot(plot_df,aes(x = xlabeltext,y = abundance))
+       # Generate plot dependent on given PlotOption
+       if (PlotOption == 1) {
+         my_boxplot <- g + stat_boxplot(geom = "errorbar", width = 0.25) + geom_boxplot(varwidth = FALSE,width = 0.7)
+         my_violinplot <- g + geom_violin(width = 0.7) + geom_boxplot(width = 0.1)
+         my_point_boxplot <- g + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7)
+       } else if (PlotOption == 2) {
+         my_boxplot <- g + stat_boxplot(geom = "errorbar", width = 0.25) + geom_boxplot(varwidth = FALSE,width = 0.7) + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7)
+         my_violinplot <- g + geom_violin(width = 0.7) + geom_boxplot(width = 0.1) + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5)
+         my_point_boxplot <-g + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.5)
+       }else if (PlotOption == 3) {
+         my_boxplot <- g + stat_boxplot(geom = "errorbar", width = 0.25) + geom_boxplot(varwidth = FALSE,width = 0.7) + 
+           geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7) + 
+           geom_label_repel(aes(xlabeltext, abundance, fill = NULL, label = samplekaname),fontface = 'bold', color = 'black',box.padding = unit(0.25, "lines"),point.padding = unit(0.5, "lines"),size = 2)
+         my_violinplot <-g + geom_violin(width = 0.7) + geom_boxplot(width = 0.1) + 
+           geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7) + geom_label_repel(aes(xlabeltext, abundance, fill = NULL, label = samplekaname),
+                                                                                              fontface = 'bold', color = 'black',box.padding = unit(0.25, "lines"),
+                                                                                              point.padding = unit(0.5, "lines"),size = 2)
+         my_point_boxplot <-g + geom_dotplot(binaxis = 'y', stackdir = 'center', dotsize = 0.7) + geom_label_repel(aes(xlabeltext, abundance, fill = NULL, label = samplekaname),
+                                                                                                                   fontface = 'bold', color = 'black',box.padding = unit(0.25, "lines"),point.padding = unit(0.5, "lines"), size = 2)
+       }
+       
+       my_boxplot <-my_boxplot + ggtitle(my_name) + guides(fill = FALSE) + ylab(labelsy) + xlab("") + theme_bw() + theme(axis.text.x = element_text(colour = "grey20",size = 12,angle = 45,hjust = 1,vjust = 1,face = "plain"),
+                                                                                                                         axis.text.y = element_text(colour = "grey20",size = 12,angle = 0,hjust = 1,vjust = 0,face = "plain"),axis.title.y = element_text(colour = "grey20",size = 14,angle = 90,hjust = .5,vjust = .5,face = "plain"),
+                                                                                                                         plot.title = element_text(colour = "grey22",size = 18,hjust = .5,vjust = .5,face = "bold")) + theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"))
+       
+       my_violinplot <-my_violinplot + ggtitle(my_name) + ylab(labelsy) + guides(fill = FALSE) + xlab("") + theme_bw() +theme(axis.text.x = element_text(colour = "grey20",size = 12,angle = 45,hjust = 1,vjust = 1,face = "plain"),
+                                                                                                                              axis.text.y = element_text(colour = "grey20",size = 12,angle = 0,hjust = 1,vjust = 0,face = "plain"),axis.title.y = element_text(colour = "grey20",size = 14,angle = 90,hjust = .5,vjust = .5,face = "plain"),
+                                                                                                                              plot.title = element_text(colour = "grey22",size = 18,hjust = .5,vjust = .5,face = "bold")) + theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"))
+       
+       my_point_boxplot <- my_point_boxplot + ggtitle(my_name) + theme_bw() + ylab(labelsy) +stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,geom = "crossbar", width = 0.5) +
+         guides(fill = FALSE) + xlab("") + theme(legend.position = "none") + guides(colour = FALSE) + theme( axis.text.x = element_text(colour = "grey20",size = 12,angle = 45,hjust = 1,vjust =1,face = "plain"),
+                                                                                                             axis.text.y = element_text(colour = "grey20",size = 12,angle = 0,hjust = 1,vjust = 0,face = "plain"),axis.title.y = element_text(colour = "grey20",size = 14,angle = 90,hjust = .5,vjust = .5,face = "plain"),
+                                                                                                             plot.title = element_text(colour = "grey22",size = 18,hjust = .5,vjust = .5,face = "bold")) + theme(plot.margin=unit(c(1,1,1.5,1.2),"cm"))
+       
+       # Save the boxplot object in the list
+       list_box[[x]] <- list()
+       list_box[[x]] <- my_boxplot
+       
+       # Save the boxplot with points object in the list
+       list_point[[x]] <- list()
+       list_point[[x]] <- my_point_boxplot
+       
+       # Save the violin object in the list
+       list_violin[[x]] <- list()
+       list_violin[[x]] <- my_violinplot
+       
+       
+       
+       # Make a list object to store all "prevalence table" to print in PDF
+       texttable[[x]] <- list()
+       
+       # Creat a gtable containing text grobs representing a character matrix
+       # "mytheme" is a text theme defined at the begining
+       texttable[[x]] <- tableGrob(pre_table,theme = mytheme)
+       
+       # Define the title of the tables
+       title <- textGrob("Prevalence table",gp = gpar(fontsize = 7))
+       padding <- unit(3,"mm")
+       texttable[[x]] <- gtable_add_rows(texttable[[x]], heights = grobHeight(title) + padding, pos = 0)
+       texttable[[x]] <- gtable_add_grob(texttable[[x]], title, 1, 1, 1, ncol(texttable[[x]]))
+       
+       
+       # Test for the case that there are no significant pairs
+       # Check whether Fisher test is significant or not
+       if (fish_pvalue <= 0.05) {
+        if (!is.na(signif_fpairs[1,1])) {
+         signif_fpairs$measure <- as.character(signif_fpairs$measure)
+         signif_fpairs$name <- as.character(signif_fpairs$name)
+         colnames(signif_fpairs) <-c("Species","Groups","P-value","Adj. p-value")
+         fpvaltable[[x]] <- list()
+         
+         # Pavlue table for significant pairs
+         fpvaltable[[x]] <- tableGrob(signif_fpairs[2:4],rows = NULL,theme = mytheme)
+         title <- textGrob("Fisher's Exact Test - pairwise",gp = gpar(fontsize = 9))
+         padding <- unit(3,"mm")
+         fpvaltable[[x]] <- gtable_add_rows(fpvaltable[[x]], heights = grobHeight(title) + padding,pos = 0)
+         fpvaltable[[x]] <- gtable_add_grob(fpvaltable[[x]], title, 1, 1, 1, ncol(fpvaltable[[x]]))
+        }else {
+         FnewRow$name <- as.character(FnewRow$name)
+         FnewRow$pvalue <- as.character(FnewRow$pvalue)
+         FnewRow <- cbind(FnewRow$name,"-",FnewRow$pvalue,0)
+         colnames(FnewRow) <-c("Species","Groups","P-value","Adj. p-value")
+         allfpvaltable[[x]] <- list()
+         allfpvaltable[[x]] <- tableGrob(FnewRow,rows = NULL,theme = mytheme)
+         #fpvaltable[[x]] <- NULL
+        }
+       }
+       # Check whether Kruskal-Wallis test is significant or not
+       if (!is.na(signif_pairs[1,1])) {
+         signif_pairs$measure <- as.character(signif_pairs$measure)
+         signif_pairs$name <- as.character(signif_pairs$name)
+         colnames(signif_pairs) <-c("Species","Groups","P-value","Adj. p-value")
+         pvaltable[[x]] <- list()
+         pvaltableAll[[x]] <- list()
+         
+         # Pvalue table for significant pairs
+         signif_all <- signif_pairs[1,c(1,3,4)]
+         #if(dim(signif_pairs)[1] > 1) {
+         signif_pairs <- signif_pairs[2:dim(signif_pairs)[1],]
+           pvaltable[[x]] <-tableGrob(signif_pairs[2:4],rows = NULL,theme = mytheme)
+           
+           # Title of tables in the PDF
+           title <- textGrob("Wilcoxon Rank Sum Test - pairwise",gp = gpar(fontsize = 9))
+           padding <- unit(2,"mm")
+           pvaltable[[x]] <- gtable_add_rows(pvaltable[[x]], heights = grobHeight(title) + padding,pos = 0)
+           pvaltable[[x]] <- gtable_add_grob(pvaltable[[x]], title, 1, 1, 1, ncol(pvaltable[[x]]))
+         colnames(signif_all) <-c(" ","P-value","Adj. p-value")
+         pvaltableAll[[x]] <- tableGrob(signif_all,rows = NULL,theme = mytheme)
+         title <- textGrob("Kruskal-Wallis Rank Sum Test - all groups ",gp = gpar(fontsize = 9))
+         padding <- unit(2,"mm")
+         pvaltableAll[[x]] <- gtable_add_rows(pvaltableAll[[x]], heights = grobHeight(title) + padding,pos = 0)
+         pvaltableAll[[x]] <- gtable_add_grob(pvaltableAll[[x]], title, 1, 1, 1, ncol(pvaltableAll[[x]]))
+       }
+     }
+     
 }
+
 
 # Apply Benjamini-Hochberg (1995) correction 
 # Add a column with the corrected p-values 
 Fdf$corrected <- round(p.adjust(Fdf$pvalue, method = "BH"),4)
+sig_Fdf <- subset(Fdf,Fdf$pvalue<=0.05)
+counter = 1
+if(length(allfpvaltable)!=length(fpvaltable)) {
+  for ( i in (length(allfpvaltable)+1):(length(fpvaltable)+1)) {
+    allfpvaltable[[i]] <- list()
+    allfpvaltable[[i]] <- NULL
+  }
+}
 
 if (length(fpvaltable)!=0){
 for (i in 1:length(fpvaltable)){
-  if (!is.null(fpvaltable[[i]])){
-    colnames(Fdf) <-c(" ","P-value","Adj.p-value")
+  if (!is.null(fpvaltable[[i]]) || !is.null(allfpvaltable[[i]])){
+    colnames(sig_Fdf) <-c(" ","P-value","Adj.p-value")
     allfpvaltable[[i]] <- list()
     title_all <- textGrob("Fisher's Exact Test - all groups",gp = gpar(fontsize = 9))
     padding <- unit(3,"mm")
-    allfpvaltable[[i]] <- tableGrob(Fdf[i,],rows = NULL,theme = mytheme)
+    allfpvaltable[[i]] <- tableGrob(sig_Fdf[counter,],rows = NULL,theme = mytheme)
     allfpvaltable[[i]] <- gtable_add_rows(allfpvaltable[[i]], heights = grobHeight(title_all) + padding,pos = 0)
     allfpvaltable[[i]] <- gtable_add_grob(allfpvaltable[[i]], title_all, 1, 1, 1, ncol(allfpvaltable[[i]]))
+    counter=counter+1
   }
 }
+}
+
+# If the last pvalues are only signficant for fisher OR Wilcox additional empty lists has to be added to the array of lists
+if (length(pvaltableAll) < length(allfpvaltable)) {
+  # Add empty list entries in the Wilcox and Kruskal Walis tables
+  for ( i in (length(pvaltableAll)+1):(length(allfpvaltable)+1)) {
+    pvaltable[[i]] <- list()
+    pvaltable[[i]] <- NULL
+    pvaltableAll[[i]] <- list()
+    pvaltableAll[[i]] <- NULL
+  }
+} 
+
+if (length(pvaltableAll) > length(allfpvaltable)) {
+  # Add empty list entries in the Fisher tables
+  for ( i in (length(allfpvaltable)+1):(length(pvaltableAll)+1)) {
+    fpvaltable[[i]] <- list()
+    fpvaltable[[i]] <- NULL
+    allfpvaltable[[i]] <- list()
+    allfpvaltable[[i]] <- NULL
+  }
 }
 
 ####################                 Print plots in PDF               ############################
@@ -668,84 +711,78 @@ for (plotType in c("box","boxpoint","violin"))
    # Open a PDF to print all outputs 
   pdf(paste("plot",plotType,".pdf"),onefile = T)
   for (pos in 1:x) {
-    if (Fdf[pos,2] <= 0.05) {
-      if (is.null(dim(pvaltableAll[[pos]]))) {
-        
-        # Arrange table in PDF
-        if (is.null(dim(fpvaltable[[pos]]))){
-          grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],nrow = 1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
-        }else{
-          grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],fpvaltable[[pos]],nrow = 2),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
+    # No significant results for Kruskal Walis Test
+    if (is.null(pvaltableAll[[pos]])) { 
+      # Fisher Test is not signficant
+      if (is.null(allfpvaltable[[pos]])) {
+        plotb[[pos]]
+      } 
+      # Signfiicant Fisher Test
+      else {
+        # Check if paired Fisher is signficant as well
+        if (is.null(fpvaltable[[pos]])) {
+          # Only the overall Fisher Test is significant 
+          grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],nrow = 1,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
         }
-      }else{
-        if (nlevels(independent_variable)>5) {
-          
-          # Separate page for plot and table
-          if (!is.null(dim(fpvaltable[[pos]])) && !is.null(dim(pvaltable[[pos]]))) {
-            print(plotb[[pos]])
-            print(plot_grid(allfpvaltable[[pos]],pvaltableAll[[pos]],fpvaltable[[pos]],pvaltable[[pos]],ncol=2,nrow = 2,align="v", rel_heights=c(1,10)))
+        else {
+          # Both Fisher Tests are significant 
+          if (nlevels(independent_variable)>5){
+           print(plotb[[pos]])
+           print(plot_grid(allfpvaltable[[pos]],fpvaltable[[pos]],ncol=1, nrow = 2,align="v", rel_heights=c(1,10)))
           }
-          else if (is.null(dim(fpvaltable[[pos]])) && !is.null(dim(pvaltable[[pos]]))) {
-            print(plotb[[pos]])
-            print(plot_grid(allfpvaltable[[pos]],pvaltableAll[[pos]],pvaltable[[pos]],ncol=2,nrow=2, align="v", rel_heights=c(1,10)))
-          }
-          else if(!is.null(dim(fpvaltable[[pos]])) && is.null(dim(pvaltable[[pos]]))){
-            print(plotb[[pos]])
-            print(plot_grid(allfpvaltable[[pos]],fpvaltable[[pos]],pvaltableAll[[pos]],ncol=2,ncol=2,align="v", rel_heights=c(1,10)))
-          }
-          else {
-            print(plotb[[pos]])
-            print(plot_grid(allfpvaltable[[pos]],pvaltableAll[[pos]],ncol=2,align="v", rel_heights=c(1,10)))
-          }
-          
-          # first column = Fisher Table
-          # second Column = Kruskal Table
-          
-        }else {
-          if (!is.null(dim(fpvaltable[[pos]])) && !is.null(dim(pvaltable[[pos]])) ) {
-            grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],fpvaltable[[pos]],pvaltableAll[[pos]],pvaltable[[pos]],nrow = 4,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
-          }
-          else if (is.null(dim(fpvaltable[[pos]])) && !is.null(dim(pvaltable[[pos]]))) {
-            grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],pvaltableAll[[pos]],pvaltable[[pos]],nrow = 3,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
-          }
-          else if(!is.null(dim(fpvaltable[[pos]])) && is.null(dim(pvaltable[[pos]]))){
-            grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],fpvaltable[[pos]],pvaltableAll[[pos]],nrow = 3,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
-          }
-          else {
-            grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],pvaltableAll[[pos]],nrow = 2,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
-          }
+          else{
+          grid.arrange(plotb[[pos]],arrangeGrob(allfpvaltable[[pos]],fpvaltable[[pos]],nrow = 2,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
+          }        
         }
       }
-   
-    # Pvalue is greater than 0.05
-    }else{
-        if (nlevels(independent_variable)>5) {
-          if (is.null(dim(pvaltable[[pos]]))) {
-            # Separate page for plot and table
+    }
+    # Significant Kruskal Walis Test
+    else {
+      # Fisher test is not signficant
+      if (is.null(allfpvaltable[[pos]])) {
+        # Add table only for Kruskal Walis Test 
+        if (is.null(pvaltable[[pos]])) {
+          grid.arrange(plotb[[pos]],arrangeGrob(pvaltableAll[[pos]],nrow = 1,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
+        }
+        # Add table for Kruskal Walis and Wilcoxon test
+        else{
+          if (nlevels(independent_variable)>5){
             print(plotb[[pos]])
-            # First column = Kruskal-Wallis
-            print(plot_grid(pvaltable[[pos]],ncol=1))
-          }else {
-            # Separate page for plot and table
+            print(plot_grid(pvaltableAll[[pos]],pvaltable[[pos]],ncol=1, nrow = 2,align="v", rel_heights=c(1,10)))
+          }
+          else{
+          grid.arrange(plotb[[pos]],arrangeGrob(pvaltableAll[[pos]], pvaltable[[pos]],nrow = 2,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
+          }
+        }
+      } 
+      # Significant Kruskal Walis and Fisher Test
+      else {
+        # The paired Fisher test is not significant 
+        if (is.null(fpvaltable[[pos]])){
+          if (nlevels(independent_variable)>5) {
             print(plotb[[pos]])
-            # First column = Kruskal-Wallis
-            print(plot_grid(pvaltableAll[[pos]],pvaltable[[pos]],ncol=2))
-          }
-        } else {
-          if (is.null(dim(pvaltable[[pos]]))) {
-            grid.arrange(plotb[[pos]],arrangeGrob(pvaltableAll[[pos]],nrow = 1),nrow = 2,ncol=2,heights = c(3,1),as.table =T)
-          }else {
-            grid.arrange(plotb[[pos]],arrangeGrob(pvaltableAll[[pos]],pvaltable[[pos]],nrow = 2),nrow = 2,ncol=2,heights = c(3,1),as.table =T)
-          }
-          
+            print(plot_grid(allfpvaltable[[pos]],pvaltableAll[[pos]],pvaltable[[pos]],ncol=2,nrow = 2,align="v", rel_heights=c(1,10)))
+          }else{
+            # Add table for both tests
+            grid.arrange(plotb[[pos]],arrangeGrob(pvaltableAll[[pos]], pvaltable[[pos]],allfpvaltable[[pos]],nrow = 4,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
+          }  
+        }
+        else {
+          # The paired Fisher Test is significant
+          if (nlevels(independent_variable)>5) {
+            print(plotb[[pos]])
+            print(plot_grid(allfpvaltable[[pos]],pvaltableAll[[pos]],fpvaltable[[pos]],pvaltable[[pos]],ncol=2,nrow = 2,align="v", rel_heights=c(1,10)))
+          }else{
+            # Add table for both tests
+            grid.arrange(plotb[[pos]],arrangeGrob(pvaltableAll[[pos]],pvaltable[[pos]],allfpvaltable[[pos]],fpvaltable[[pos]],nrow = 4,ncol=1),nrow = 2,ncol=2,heights = c(3,1),as.table = T)
+          }   
+        }
       }
     }
   }
-  dev.off()
+dev.off()
+ }
 }
-
-}
-
 ################################################################################
 ######                        Write Output Files in Seperate folder       ######
 #################################################################################
