@@ -327,7 +327,7 @@ my_pairs <- my_pairs[!duplicated(my_pairs[, 3]), ]
 
 # Created matrix columns represent correlation coefficients, p-values, number of observations, and corrected p-values
 # Rows represent the pairs
-matrix_names <- list(NULL,
+matrix_names <- list(c(rep("",times=dim(my_pairs)[1])),
                      c(
                        "variable1",
                        "variable2",
@@ -343,7 +343,7 @@ dimnames(my_pairs) <- matrix_names
 my_pairs_cutoff <- my_pairs[my_pairs[, 4] <= signf_cutoff, ]
 
 # Convert to matrix
-my_pairs_cutoff <- matrix(my_pairs_cutoff,ncol=6)
+my_pairs_cutoff <- matrix(my_pairs_cutoff,ncol=6,dimnames = list(c(rep("",times=dim(my_pairs_cutoff)[1])),c("variable1","variable2","correlation","pvalue","support","corrected pvalue")))
 
 # Create subset of significant pairs with strong correlation (above 0.5)
 my_pairs_cutoff_corr <- my_pairs_cutoff[abs(as.numeric(my_pairs_cutoff[, 3])) >= 0.5, ]
@@ -373,12 +373,12 @@ if (plot_pval_cutoff != signf_cutoff | plot_corr_cutoff != 0.5) {
   
   # Extract all significant pairs with the set correlation cutoff
   corr_pval_cutoff <- my_pairs_cutoff[abs(as.numeric(my_pairs_cutoff[, 3])) >= plot_corr_cutoff, ]
-  corr_pval_cutoff <- matrix(corr_pval_cutoff,ncol=6, dimnames=list(c(""),c("variable1","variable2","correlation","pvalue","support","corrected pvalue")))
+  corr_pval_cutoff <- matrix(corr_pval_cutoff,ncol=6, dimnames=list(c(rep("",times=dim(corr_pval_cutoff)[1])),c("variable1","variable2","correlation","pvalue","support","corrected pvalue")))
 } else  {
   # If the significance cutoff is 0.05 an the correlation cutoff is 0.5 (for plotting)
   # Take the previously generated matrix
   corr_pval_cutoff <- my_pairs_cutoff_corr
-  corr_pval_cutoff <- matrix(corr_pval_cutoff,ncol=6, dimnames=list(c(""),c("variable1","variable2","correlation","pvalue","support","corrected pvalue")))
+  corr_pval_cutoff <- matrix(corr_pval_cutoff,ncol=6, dimnames=list(c(rep("",times=dim(corr_pval_cutoff)[1])),c("variable1","variable2","correlation","pvalue","support","corrected pvalue")))
  }
 
 # Save linearized transformed correlations of significant pairs in "linear_sign_pairs.pdf"
