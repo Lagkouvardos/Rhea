@@ -634,10 +634,19 @@ for (i in dependant_variables_start:dim(input_table)[2])
 Fdf$corrected <- round(p.adjust(Fdf$pvalue, method = "BH"),4)
 sig_Fdf <- subset(Fdf,Fdf$pvalue<=0.05)
 counter = 1
+
 if(length(allfpvaltable)!=length(fpvaltable)) {
-  for ( i in (length(allfpvaltable)+1):(length(fpvaltable)+1)) {
-    allfpvaltable[[i]] <- list()
-    allfpvaltable[[i]] <- NULL
+  if(length(allfpvaltable) > length(fpvaltable)){
+  for ( i in (length(fpvaltable)+1):(length(allfpvaltable)+1)) {
+    fpvaltable[[i]] <- list()
+    fpvaltable[[i]] <- NULL
+    }
+  }
+  else{
+    for ( i in (length(allfpvaltable)+1):(length(fpvaltable)+1)) {
+      allfpvaltable[[i]] <- list()
+      allfpvaltable[[i]] <- NULL
+    }
   }
 }
 
