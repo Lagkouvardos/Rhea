@@ -1,5 +1,3 @@
-#' Version 2.7
-#' Last modified on 14/06/2016
 #' Script: Statistical comparison of taxonomic composition and alpha-diversity parameters between groups
 #' Author: Ilias Lagkouvardos
 
@@ -36,7 +34,7 @@ setwd("D:/imngs-toolbox/Rhea/5.Serial-Group-Comparisons/")  #<--- CHANGE ACCORDI
 input_filename = "OTUsCombined.tab"              #<--- CHANGE ACCORDINGLY !!!
 
 #' The name of the independant variable that the analysis will be performed on
-independant_variable_name <- "Genotype"
+independant_variable_name <- "Diet"
 
 #' Please enter the position in the table (column number) where the dependant variable starts (e.g. Richness)
 #' Note: the first column containing sample names does not count!
