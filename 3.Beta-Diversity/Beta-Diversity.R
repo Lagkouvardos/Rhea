@@ -1,5 +1,3 @@
-#' Version 1.0
-#' Last modified on 14/06/2016
 #' Script: Beta-Diversity
 #' Author: Ilias Lagkouvardos
 #'
@@ -46,7 +44,7 @@ input_meta = "mapping_file.tab"                #<--- CHANGE ACCORDINGLY !!!
 input_tree = "OTUs-Tree.tre"                   #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the column name (in the mapping file) of the categorical variable to be used for comparison (e.g. Genotype)
-group_name = "Genotype"                   #<--- CHANGE ACCORDINGLY !!!
+group_name = "Diet"                            #<--- CHANGE ACCORDINGLY !!!
 
 ##################################################################################
 ######                  Additional parameters                               ######
