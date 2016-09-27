@@ -36,14 +36,25 @@ MetaFile <- "mapping_file.tab";                         #<--- CHANGE ACCORDINGLY
 
 ###################       Load all required libraries     ########################
 
-# Check if required package GUniFrac is already installed
-if (!require("compare")) {
+# Check if required packages are already installed, and install if missing
+packages <-c("compare") 
 
-# Package is not already installed and will be installed automatically
-  install.packages("compare")
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack)
+  } 
 }
-library(compare)
 
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries 
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
 ###################            Read input table              ####################
 
 # Reading all files
@@ -83,6 +94,13 @@ if(compareIgnoreOrder(row.names(TaxanomyAll),row.names((MetaFile)))$result & com
   print("ATTENTION !!!! Sample names differ across files. Script aborted.")
   print("Please ensure that identical sample names are used.")
 }
+
+if(!flag) { stop("
+    It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+}
+
 
 #################################################################################
 ######                           End of Script                             ######

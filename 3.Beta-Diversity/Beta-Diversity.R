@@ -68,26 +68,26 @@ label_id =c("")
 
 ###################       Load all required libraries     ########################
 
-# Check if required package ade4 is already installed, and install if missing
-if (!require("ade4")) {install.packages("ade4")}
+# Check if required packages are already installed, and install if missing
+packages <-c("ade4","GUniFrac","phangorn","randomcoloR","Rcpp") 
 
-# Check if required package GUniFrac is already installed, and install if missing
-if (!require("GUniFrac")) {install.packages("GUniFrac")}
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack)
+  } 
+}
 
-# Check if required package phangorn is already installed, and install if missing
-if (!require("phangorn"))  {install.packages("phangorn")}
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
 
-# Check if required package randomcoloR is already installed, and install if missing
-if (!require("randomcoloR"))  {install.packages("randomcoloR")}
+# Make the libraries
+lib <- lapply(packages, require, character.only = TRUE)
 
-# Check if required package Rcpp is already installed, and install if missing
-if (!require("Rcpp"))  {install.packages("Rcpp")}
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
 
-# Load and attach required packages
-library(GUniFrac)
-library(ade4)
-library(phangorn)
-library(randomcoloR)
 
 ###################       Read all required input files      ####################
 
@@ -287,6 +287,12 @@ file_name <- paste(group_name,"distance-matrix-gunif.tab",sep="_")
 write.table( unifract_dist, paste(group_name,"/",file_name,sep=""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Graphical output files are generated in the main part of the script
+
+if(!flag) { stop("
+    It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+}
 
 #################################################################################
 ######                           End of Script                             ######

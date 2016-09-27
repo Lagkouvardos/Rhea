@@ -86,7 +86,10 @@ InsPack <- function(pack)
 lapply(packages, InsPack)
 
 # Make the libraries 
-lapply(packages, require, character.only = TRUE)
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
 
 #####################################################################################################################
 ####                                        Functions to be used  in main Script.                            ########
@@ -825,6 +828,12 @@ cat ("PlotOption:",PlotOption,"\n","\n")
 cat ("ReplaceZero:",ReplaceZero,"\n","\n")
 sink()
 setwd(OriginalPath)
+
+if(!flag) { stop("
+    It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+}
 
 ########################################################
 ##    Script Ended !!!!

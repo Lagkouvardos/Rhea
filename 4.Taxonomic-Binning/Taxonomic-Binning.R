@@ -48,11 +48,25 @@ otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 
 ###################       Load all required libraries     ########################
 
-# Check if required package scales is already installed, and install if missing
-if (!require("randomcoloR"))  {install.packages("randomcoloR")}
+# Check if required packages are already installed, and install if missing
+packages <-c("randomcoloR") 
 
-# Load and attach required packages (this has to be done every time)
-library(randomcoloR)
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack)
+  } 
+}
+
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries 
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
 
 ###################            Read input table              ####################
 
@@ -303,6 +317,13 @@ legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(genera)),cex=0.7,col 
 
 dev.off()
 }
+
+if(!flag) { stop("
+    It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+}
+
 
 #################################################################################
 ######                           End of Script                             ######
