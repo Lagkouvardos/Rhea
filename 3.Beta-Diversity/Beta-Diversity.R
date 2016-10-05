@@ -69,7 +69,7 @@ label_id =c("")
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","randomcoloR","Rcpp") 
+packages <-c("ade4","GUniFrac","phangorn","randomcoloR","Rcpp","V8","curl") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)

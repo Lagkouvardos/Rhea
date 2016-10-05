@@ -49,7 +49,7 @@ otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("randomcoloR") 
+packages <-c("randomcoloR","V8","curl") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
