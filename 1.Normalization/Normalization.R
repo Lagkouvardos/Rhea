@@ -17,10 +17,12 @@
 #' 4. Normalized relative abundances with taxonomy information
 #' 
 #' Concept:
-#' Normalization via division by the sum of sequences in a given sample
+#' The default method followed is normalization via division by the sum of sequences in a given sample
 #' and mulitplication by the minimum sum across all samples
 #' It is used instead of the classic rarefactioning approach
-#' to prevent confounding effects of subsampling sequences with possible consequences on diversity
+#' to prevent confounding effects of subsampling sequences with possible consequences on diversity.
+#' Normalized counts are not rounded to prevent loss of information.
+#' The option of classic rarefaction is still available if deemed necessary by users
 #' 
 #' Note:
 #' Files are stored in the current folder 
