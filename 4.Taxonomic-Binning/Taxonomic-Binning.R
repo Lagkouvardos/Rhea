@@ -46,28 +46,6 @@ otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 ######                             Main Script                              ###### 
 ##################################################################################
 
-###################       Load all required libraries     ########################
-
-# Check if required packages are already installed, and install if missing
-packages <-c("randomcoloR","V8","curl") 
-
-# Function to check whether the package is installed
-InsPack <- function(pack)
-{
-  if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack)
-  } 
-}
-
-# Applying the installation on the list of packages
-lapply(packages, InsPack)
-
-# Make the libraries 
-lib <- lapply(packages, require, character.only = TRUE)
-
-# Check if it was possible to install all required libraries
-flag <- all(as.logical(lib))
-
 ###################            Read input table              ####################
 
 # Load the tab-delimited file containing the abundances and taxonomic information to be checked (rownames in the first column)
@@ -286,44 +264,45 @@ pdf("taxonomic-overview.pdf")
 par(xpd=T, mar=par()$mar+c(0,0,0,9))
 
 #Kingdom
-k_col=distinctColorPalette(dim(kingdom)[1])
+#k_col=distinctColorPalette(dim(kingdom)[1])
+k_col=rainbow(dim(kingdom)[1])
+k_col=sample(k_col)
 barplot(kingdom,col=k_col, cex.names=0.5, ylab="cumulative relative abundance (%)", las=2, main="Taxonomic binning at Kingdom level")
 legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(kingdom)),cex=0.7,col = rev(k_col),pch = 16,pt.cex = 1.2)
 
 #Phyla
-p_col=distinctColorPalette(dim(phyla)[1])
+#p_col=distinctColorPalette(dim(phyla)[1])
+p_col=rainbow(dim(phyla)[1])
+p_col=sample(p_col)
 barplot(phyla,col=p_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Phyla level")
 legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(phyla)),cex=0.7,col = rev(p_col),pch = 16,pt.cex = 1.2)
 
 #Classes
-c_col=distinctColorPalette(dim(classes)[1])
+c_col=rainbow(dim(classes)[1])
+c_col=sample(c_col)
 barplot(classes,col=c_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Class level")
 legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(classes)),cex=0.7,col = rev(c_col),pch = 16,pt.cex = 1.2)
 
 #Orders
-o_col=distinctColorPalette(dim(orders)[1])
+o_col=rainbow(dim(orders)[1])
+o_col=sample(o_col)
 barplot(orders,col=o_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Order level")
 legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(orders)),cex=0.7,col = rev(o_col),pch = 16,pt.cex = 1.2)
 
 #Families
-f_col=distinctColorPalette(dim(families)[1])
+f_col=rainbow(dim(families)[1])
+f_col=sample(f_col)
 barplot(families,col=f_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Family level")
 legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(families)),cex=0.7,col = rev(f_col),pch = 16,pt.cex = 1.2)
 
 #Genera
-g_col=distinctColorPalette(dim(genera)[1])
+g_col=rainbow(dim(genera)[1])
+g_col=sample(g_col)
 barplot(genera,col=g_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Genus level")
 legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(genera)),cex=0.7,col = rev(g_col),pch = 16,pt.cex = 1.2)
 
 dev.off()
 }
-
-if(!flag) { stop("
-    It was not possible to install all required R libraries properly.
-                 Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
-}
-
 
 #################################################################################
 ######                           End of Script                             ######

@@ -69,7 +69,7 @@ label_id =c("")
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","randomcoloR","Rcpp","V8","curl") 
+packages <-c("ade4","GUniFrac","phangorn","Rcpp") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -141,7 +141,7 @@ all_fit <- hclust(all_dist_matrix, method = "ward.D2")
 # Generates a tree from the hierarchically generated object
 tree <- as.phylo(all_fit)
 my_tree_file_name <- paste(group_name,"/phylogram.pdf",sep="")
-plot_color<-distinctColorPalette(length(levels(all_groups)))[all_groups]
+plot_color<-rainbow(length(levels(all_groups)))[all_groups]
 
 # Save the generated phylogram in a pdf file
 pdf(my_tree_file_name)
@@ -268,7 +268,7 @@ for(i in 1:length(combn(unique_groups,2)[1,])){
     meta <- metaMDS(pairedMatrixList[[i]], k = 2)
     s.class(
       meta$points,
-      col = distinctColorPalette(length(levels(all_groups))), cpoint = 2,
+      col = rainbow(length(levels(all_groups))), cpoint = 2,
       fac = as.factor(all_groups[all_groups == pair_1_list[i] |
                                    all_groups == pair_2_list[i]]),
       sub = paste("NMDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n(p-value ",pVal[i],","," corr. p-value ", pVal_BH[i],")",sep="")
