@@ -41,11 +41,40 @@ setwd("D:/Git/imngs-toolbox/Rhea/1.Normalization") #<--- CHANGE ACCORDINGLY
 #' Please give the file name of the original OTU-table with taxonomic classification 
 file_name<-"OTUs-Table.tab"  #<--- CHANGE ACCORDINGLY
 
+# 'Please select the normalisation method
+method <- 0
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
 ######                             Main Script                              ###### 
 ##################################################################################
+
+
+###################       Load all required libraries     ########################
+
+# Check if required packages are already installed, and install if missing
+packages <-c("GUniFrac") 
+
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack)
+  } 
+}
+
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
+
+
+###################       Read all required input files      ####################
 
 # Load the tab-delimited file containing the values to be be checked (rownames in the first column)
 otu_table <-  read.table (file_name,
@@ -56,6 +85,10 @@ otu_table <-  read.table (file_name,
                           row.names = 1,
                           comment.char = "")
 
+
+####################       Normalize OTU Table          ###################
+
+
 # Save taxonomy information in vector
 taxonomy <- as.vector(otu_table$taxonomy)
 
@@ -65,8 +98,14 @@ otu_table$taxonomy <- NULL
 # Calculate the minimum sum of all columns/samples
 min_sum <- min(colSums(otu_table))
 
+if (method == 0) {
 # Divide each value by the sum of the sample and multiply by the minimal sample sum
 norm_otu_table <- t(min_sum * t(otu_table) / colSums(otu_table))
+} else {
+  # Rarefy the OTU table to an equal sequencing depth
+  norm_otu_table <- Rarefy(t(otu_table),depth = min_sum)
+  norm_otu_table <- t(as.data.frame(norm_otu_table$otu.tab.rff))
+}
 
 # Calculate relative abundances for all OTUs over all samples
 # Divide each value by the sum of the sample and multiply by 100
@@ -97,6 +136,13 @@ suppressWarnings (try(write.table(rel_otu_table, "../5.Serial-Group-Comparisons/
 # Write the normalized relative abundance with taxonomy table in a file and copy in directory Taxonomic-Binning if existing
 write.table(rel_otu_table_tax, "OTUs_Table-norm-rel-tax.tab", sep ="\t",col.names = NA, quote = FALSE)
 suppressWarnings (try(write.table(rel_otu_table_tax, "../4.Taxonomic-Binning/OTUs_Table-norm-rel-tax.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+
+# Error message 
+if(!flag) { stop("
+                 It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+}
 
 #################################################################################
 ######                           End of Script                             ######
