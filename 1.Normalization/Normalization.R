@@ -35,15 +35,15 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/normalize/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/Git/imngs-toolbox/Rhea/1.Normalization") #<--- CHANGE ACCORDINGLY
+setwd("D:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the original OTU-table with taxonomic classification 
-file_name<-"OTUs-Table.tab"  #<--- CHANGE ACCORDINGLY
+file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
 
 #' Please select the normalisation method
-#' 0: 
-
-method <- 0
+#' 0 = No random subsampling, no rounding
+#' 1 = Random subsampling with rounding
+method <- 0                                   #<--- CHANGE ACCORDINGLY
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
