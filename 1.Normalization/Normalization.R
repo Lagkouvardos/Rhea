@@ -18,10 +18,9 @@
 #' 
 #' Concept:
 #' The default method followed is normalization via division by the sum of sequences in a given sample
-#' and mulitplication by the minimum sum across all samples
+#' and mulitplication by the minimum sum across all samples.
 #' It is used instead of the classic rarefactioning approach
-#' to prevent confounding effects of subsampling sequences with possible consequences on diversity.
-#' Normalized counts are not rounded to prevent loss of information.
+#' to avoid unnecessary variation due to the random subsampling and loss of information due to rounding.
 #' The option of classic rarefaction is still available if deemed necessary by users
 #' 
 #' Note:
@@ -41,7 +40,9 @@ setwd("D:/Git/imngs-toolbox/Rhea/1.Normalization") #<--- CHANGE ACCORDINGLY
 #' Please give the file name of the original OTU-table with taxonomic classification 
 file_name<-"OTUs-Table.tab"  #<--- CHANGE ACCORDINGLY
 
-# 'Please select the normalisation method
+#' Please select the normalisation method
+#' 0: 
+
 method <- 0
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
