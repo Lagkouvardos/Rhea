@@ -493,7 +493,7 @@ write.table(corr_pval_cutoff,"plotted-pairs-stat.tab",sep = "\t",col.names = NA,
 if(!flag) { stop("
     It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+                 Required libaries: Hmisc, corrplot")
 }
 
 
