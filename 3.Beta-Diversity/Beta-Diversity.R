@@ -32,7 +32,7 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/beta-diversity/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/imngs-toolbox/Rhea/3.Beta-Diversity/")  #<--- CHANGE ACCORDINGLY !!!
+setwd("D:/path/to/Rhea/3.Beta-Diversity/")  #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the file name of the normalized OTU-table without taxonomic classification
 input_otu = "OTUs_Table-norm.tab"              #<--- CHANGE ACCORDINGLY !!!
