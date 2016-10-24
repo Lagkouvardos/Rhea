@@ -35,7 +35,7 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/numtax/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/imngs-toolbox/Rhea/4.Taxonomic-Binning") #<--- CHANGE ACCORDINGLY
+setwd("D:/path/to/Rhea/4.Taxonomic-Binning") #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the OTU-table containing relative abundances and taxonomic classification 
 otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
