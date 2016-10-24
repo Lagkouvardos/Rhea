@@ -12,7 +12,7 @@
 
 #' Please set the directory of the script as working folder (e.g D:/MyStudy/NGS/Rhea/alpha-diversity)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/imngs-toolbox/Rhea/2.Alpha-Diversity")    #<--- CHANGE ACCORDINGLY
+setwd("D:/path/to/Rhea/2.Alpha-Diversity")    #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the normalized OTU-table (without taxonomic classification)
 file_name <- "OTUs_Table-norm.tab"                #<--- CHANGE ACCORDINGLY
