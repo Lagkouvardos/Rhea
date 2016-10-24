@@ -142,7 +142,7 @@ suppressWarnings (try(write.table(rel_otu_table_tax, "../4.Taxonomic-Binning/OTU
 if(!flag) { stop("
                  It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+                 Required libaries: GUniFrac")
 }
 
 #################################################################################
