@@ -43,7 +43,7 @@
 
 #' Please set the directory of the present script as the working folder (e.g. D:/studyname/NGS-Data/Rhea/correlation/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/imngs-toolbox/Rhea/6.Correlations")                     #<--- CHANGE ACCORDINGLY !!!
+setwd("D:/path/to/Rhea/6.Correlations")                     #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the file name of the table containing the variables for analysis
 input_file <-"correlation-input-table.tab"              #<--- CHANGE ACCORDINGLY !!!
