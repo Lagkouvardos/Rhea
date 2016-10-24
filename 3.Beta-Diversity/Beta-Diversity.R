@@ -69,7 +69,7 @@ label_id =c("")
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","Rcpp") 
+packages <-c("ade4","GUniFrac","phangorn") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -291,7 +291,7 @@ write.table( unifract_dist, paste(group_name,"/",file_name,sep=""), sep = "\t", 
 if(!flag) { stop("
     It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+                 Required libaries:ade4, GUniFrac, phangorn")
 }
 
 #################################################################################
