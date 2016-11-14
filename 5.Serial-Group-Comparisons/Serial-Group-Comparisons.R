@@ -78,7 +78,7 @@ packages <-c("plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","g
 InsPack <- function(pack)
 {
   if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack)
+    install.packages(pack,repos ="http://cran.us.r-project.org")
   } 
 }
 
