@@ -125,7 +125,7 @@ packages <-c("Hmisc","corrplot")
 InsPack <- function(pack)
 {
   if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack,repos ="http://cran.us.r-project.org")
+    install.packages(pack,repos ="http://cloud.r-project.org/")
   } 
 }
 
