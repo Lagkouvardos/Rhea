@@ -43,7 +43,7 @@ packages <-c("compare")
 InsPack <- function(pack)
 {
   if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack)
+    install.packages(pack,repos ="http://cloud.r-project.org/")
   } 
 }
 
@@ -98,7 +98,7 @@ if(compareIgnoreOrder(row.names(TaxanomyAll),row.names((MetaFile)))$result & com
 if(!flag) { stop("
     It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+                 Required libaries:compare")
 }
 
 
