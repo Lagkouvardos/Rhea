@@ -832,7 +832,7 @@ setwd(OriginalPath)
 if(!flag) { stop("
     It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+                 Required libaries:plotrix,PerformanceAnalytics,reshape,ggplot2,gridExtra,grid,ggrepel,gtable,Matrix,cowplot")
 }
 
 ########################################################
