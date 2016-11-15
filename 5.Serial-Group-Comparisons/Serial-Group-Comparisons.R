@@ -63,7 +63,7 @@ ReplaceZero = "YES"
 #' 3 = with individual values as dots and with sample names
 PlotOption = 1
 
-#set the significance cutoff level
+#' Set the significance cutoff level (default cutoff is 0.05 but it can be set lower)
 sig.cutoff <- 0.05
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
