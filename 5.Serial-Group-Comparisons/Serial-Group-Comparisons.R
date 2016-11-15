@@ -63,6 +63,9 @@ ReplaceZero = "YES"
 #' 3 = with individual values as dots and with sample names
 PlotOption = 1
 
+#set the significance cutoff level
+sig.cutoff <- 0.05
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
@@ -236,6 +239,7 @@ input_table <- cbind(my_meta_data,otu_mod_noz_max_pre)
 ####                              Differential Statistical Analysis                                        ########
 #####################################################################################################################
 
+
 # The number of total observations per category (independant variable) to be used in the analysis
 total <- summary(independent_variable)
 
@@ -378,7 +382,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
   
   # If a pvalue is calculated out of the Kruskal Walis Test, the pairwise Wilcos Rank Test will be computed as well 
   if (!is.nan(pvalue)){
-    if (pvalue <= 0.05){
+    if (pvalue <= sig.cutoff){
      # Compute p-values from Wilcoxon test for all comparisons
       ppval_res <- numeric(ncol(idx))
       
@@ -419,7 +423,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
       all_pair_pval_table <- rbind(all_pair_pval_table,pair_pval_table) 
       
       # Determine which groups are significantly different based on the results of the Wilcoxon test
-      signif_pairs <- Pforplot_table[(Pforplot_table$pvalue < 0.05) & !(is.na(Pforplot_table$pvalue)),]
+      signif_pairs <- Pforplot_table[(Pforplot_table$pvalue < sig.cutoff) & !(is.na(Pforplot_table$pvalue)),]
    } 
   }
 
@@ -493,12 +497,12 @@ for (i in dependant_variables_start:dim(input_table)[2])
      
      # Test whether the test is significant or not
      # If significant, then get value in "signif_fpairs"
-     signif_fpairs <-Fforplot_table[(Fforplot_table$pvalue <= 0.05) & !(is.na(Fforplot_table$pvalue)),]
+     signif_fpairs <-Fforplot_table[(Fforplot_table$pvalue <= sig.cutoff) & !(is.na(Fforplot_table$pvalue)),]
      
      
      # Check if at least one of the tests (Kruskal Walis or Fisher) is signficant 
      # If at least one of them is signficant a plot will be generated
-     if (fish_pvalue <= 0.05 || (pvalue <= 0.05 & !is.nan(pvalue))) {
+     if (fish_pvalue <= sig.cutoff || (pvalue <= sig.cutoff & !is.nan(pvalue))) {
        # Generate label for the X-axis
        labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
        plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""))
@@ -576,7 +580,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
        
        # Test for the case that there are no significant pairs
        # Check whether Fisher test is significant or not
-       if (fish_pvalue <= 0.05) {
+       if (fish_pvalue <= sig.cutoff) {
         if (!is.na(signif_fpairs[1,1])) {
          signif_fpairs$measure <- as.character(signif_fpairs$measure)
          signif_fpairs$name <- as.character(signif_fpairs$name)
@@ -633,7 +637,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
 # Apply Benjamini-Hochberg (1995) correction 
 # Add a column with the corrected p-values 
 Fdf$corrected <- round(p.adjust(Fdf$pvalue, method = "BH"),4)
-sig_Fdf <- subset(Fdf,Fdf$pvalue<=0.05)
+sig_Fdf <- subset(Fdf,Fdf$pvalue<=sig.cutoff)
 counter = 1
 
 if(length(allfpvaltable)!=length(fpvaltable)) {
