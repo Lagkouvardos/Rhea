@@ -118,13 +118,12 @@ abundance.fix <- function(data)
 # Replace zero value with NA 
 fill_zero.NA <- function(data,ReplaceZero)
 {
-  if (missing(ReplaceZero)) {
-    ReplaceZero == "NO"
-  }
-  if (ReplaceZero == "YES") {
+  if (ReplaceZero == "NO") {
+    return(data)
+  } else if (ReplaceZero == "YES") {
     data[data == 0] <- NA
     return(data)
-  }else{
+  } else {
     return(data)
   }
 }
@@ -832,6 +831,7 @@ cat ("prevalence_cutoff:",prevalence_cutoff,"\n","\n")
 cat ("max_median_cutoff:",max_median_cutoff,"\n","\n")
 cat ("PlotOption:",PlotOption,"\n","\n")
 cat ("ReplaceZero:",ReplaceZero,"\n","\n")
+cat ("sig.cutoff:",sig.cutoff,"\n","\n")
 sink()
 setwd(OriginalPath)
 
