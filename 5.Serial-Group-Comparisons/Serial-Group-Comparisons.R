@@ -55,6 +55,8 @@ prevalence_cutoff <- 0.3
 max_median_cutoff <- 1
 
 #' Replace 0 Value with NA 
+#' YES: Replace zeros with NA (Default)
+#' NO: Consider zeros in statistics
 ReplaceZero = "YES"
 
 #' Set the graphical output parameter 
