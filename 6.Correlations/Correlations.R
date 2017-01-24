@@ -46,7 +46,7 @@
 setwd("D:/path/to/Rhea/6.Correlations")                     #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the file name of the table containing the variables for analysis
-input_file <-"correlation-input-table.tab"              #<--- CHANGE ACCORDINGLY !!!
+input_file <-"Corr_input_table.tab"              #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the position where the taxonomic variables (OTUs or taxonomic groups) start!!
 #' IMPORTANT: Since the first column in the input file will be used as row names, we do not count it!
@@ -151,6 +151,8 @@ my_data <-
     comment.char = ""
   )
 
+# Clean table from empty lines
+my_data <- my_data[!apply(is.na(my_data) | my_data=="",1,all),]
 ####################            Functions                  #####################
 
 # Function for filling missing values with the mean of the column

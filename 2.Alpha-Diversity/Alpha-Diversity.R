@@ -75,6 +75,9 @@ otu_table <- read.table (file_name,
                        sep = "\t",
                        row.names = 1)
 
+# Clean table from empty lines
+otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
+
 # Order and transpose OTU-table
 my_otu_table <- otu_table[,order(names(otu_table))] 
 my_otu_table <-data.frame(t(my_otu_table))

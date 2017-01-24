@@ -40,6 +40,7 @@ setwd("D:/path/to/Rhea/4.Taxonomic-Binning") #<--- CHANGE ACCORDINGLY
 #' Please give the file name of the OTU-table containing relative abundances and taxonomic classification 
 otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
@@ -56,6 +57,9 @@ otu_table <-  read.table (otu_file,
                           sep = "\t",
                           row.names = 1,
                           comment.char = "")
+
+# Clean table from empty lines
+otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
 
 # Create a dataframe with a number of rows identical to the number of OTUs in the dataset
 taxonomy <- otu_table[,dim(otu_table)[2]]

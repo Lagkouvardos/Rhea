@@ -87,6 +87,9 @@ otu_table <-  read.table (file_name,
                           comment.char = "")
 
 
+# Clean table from empty lines
+otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
+
 ####################       Normalize OTU Table          ###################
 
 

@@ -94,8 +94,14 @@ flag <- all(as.logical(lib))
 # Load the tab-delimited file containing the values to be analyzed (samples names in the first column)
 otu_file <- read.table (file = input_otu, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
+# Clean table from empty lines
+otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
+
 # Load the mapping file containing individual sample information (sample names in the first column)
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
+
+# Clean table from empty lines
+meta_file <- meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),]
 
 # Load the phylogenetic tree calculated from the OTU sequences 
 tree_file <- read.tree(input_tree)
