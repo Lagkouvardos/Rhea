@@ -11,6 +11,7 @@
 #' 3. Write the name of the mapping file that includes the samples groups
 #' 4. Write the name of the OTU tree
 #' 5. Write the name of the variable (sample group) used for comparison 
+#' 
 #'
 #' Output: 
 #' The script generates three graphical outputs (pdf) and one text file
@@ -18,6 +19,7 @@
 #' 2. MDS and NMDS plots showing information about beta-diversity across all sample groups
 #' 3. MDS and NMDS plots of all pairwise comparisons
 #' 4. The distance matrix
+#' 5. Plot showing the optimal number of clusters  
 #'
 #' Concept:
 #' A distance matrix is calculated based on the generalized UniFrac approach
@@ -25,6 +27,7 @@
 #' Samples are clustered based on the distance matrix using the Ward's hierarchical clustering method
 #' To determine similarities between samples, a multivariate analysis is applied
 #' and sample distribution is illustrated by means of MDS and NMDS (non-metric) plots
+#' The Calinski-Harabasz (CH) Index is used to assess the optimal number of clusters the dataset was most robustly partitioned into  
 
 ##################################################################################
 ######             Set parameters in this section manually                  ######
@@ -69,7 +72,7 @@ label_id =c("")
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn") 
+packages <-c("ade4","GUniFrac","phangorn","cluster","clusterSim") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -95,7 +98,7 @@ flag <- all(as.logical(lib))
 otu_file <- read.table (file = input_otu, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
 # Clean table from empty lines
-otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
+otu_file <- otu_file[!apply(is.na(otu_file) | otu_file =="",1,all),]
 
 # Load the mapping file containing individual sample information (sample names in the first column)
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
@@ -284,6 +287,29 @@ dev.off()
 
 }
 
+######                        Determine number of clusters                           ######
+
+nclusters=NULL
+
+for (k in 1:(dim(otu_file)[1]-1)) { 
+  if (k==1) {
+    nclusters[k]=NA 
+  } else {
+    # Partitioning the data into k clusters (max k is number of samples within the dataset)
+    data_cluster=as.vector(pam(as.dist(unifract_dist), k, diss=TRUE)$clustering)
+    
+    # Calculate Calinski-Harabasz Index 
+    nclusters[k]=index.G1((otu_file),data_cluster,  d = as.dist(unifract_dist), centrotypes = "medoids")
+  }
+}
+
+# Generated plot showing the optimal number of clusters
+pdf("de-novo-clustering.pdf")
+
+plot(nclusters, type="h", xlab="k clusters", ylab="CH index",main="Optimal number of clusters")
+
+dev.off()
+
 #################################################################################
 ######                        Write Output Files                           ######
 #################################################################################
@@ -291,6 +317,7 @@ dev.off()
 # Write the distance matrix table in a file
 file_name <- paste(group_name,"distance-matrix-gunif.tab",sep="_")
 write.table( unifract_dist, paste(group_name,"/",file_name,sep=""), sep = "\t", col.names = NA, quote = FALSE)
+write.table( unifract_dist, "distance-matrix-gunif.tab", sep = "\t", col.names = NA, quote = FALSE)
 
 # Graphical output files are generated in the main part of the script
 
