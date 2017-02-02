@@ -53,7 +53,7 @@ cluster_number = 3                      #<--- CHANGE ACCORDINGLY !!!
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("cluster","clusterSim","ade4","GUniFrac","phangorn") 
+packages <-c("cluster","ade4","GUniFrac","phangorn") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -136,7 +136,7 @@ dev.off()
 write.table(meta_file,paste(folder_name,"/","mapping_file.tab",sep=""),sep = "\t",col.names = NA)
 
 # Write the modified mapping file and copy in directory Serial-Group-Comparisons if existing
-suppressWarnings (try(write.table(rel_otu_table, "../5.Serial-Group-Comparisons/mapping_file.tab", sep = "\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(meta_file, "../5.Serial-Group-Comparisons/mapping_file.tab", sep = "\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 if(!flag) { stop("
     It was not possible to install all required R libraries properly.
