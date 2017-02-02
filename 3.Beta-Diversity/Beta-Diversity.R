@@ -128,7 +128,7 @@ meta_file <- meta_file[order(row.names(meta_file)),]
 meta_file_pos <- which(colnames(meta_file) == group_name)
 
 # Select metadata group based on the pre-set group name
-all_groups <- meta_file[,meta_file_pos]
+all_groups <- as.factor(meta_file[,meta_file_pos])
 
 # Root the OTU tree at midpoint 
 rooted_tree <- midpoint(tree_file)
