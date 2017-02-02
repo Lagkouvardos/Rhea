@@ -72,7 +72,7 @@ label_id =c("")
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","cluster","clusterSim") 
+packages <-c("ade4","GUniFrac","phangorn","cluster","fpc") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -299,7 +299,7 @@ for (k in 1:(dim(otu_file)[1]-1)) {
     data_cluster=as.vector(pam(as.dist(unifract_dist), k, diss=TRUE)$clustering)
     
     # Calculate Calinski-Harabasz Index 
-    nclusters[k]=index.G1((otu_file),data_cluster,  d = as.dist(unifract_dist), centrotypes = "medoids")
+    nclusters[k]=calinhara(otu_file,data_cluster,k)
   }
 }
 
