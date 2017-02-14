@@ -250,6 +250,12 @@ tax_summary <- tax_summary[!duplicated(row.names(tax_summary)),]
 ######                        Write Output Files                           ######
 #################################################################################
 
+# Create a directory 
+dir.create("Taxonomic-Binning")
+
+# Set path for all outputs to the new directory
+setwd(newdir)
+
 # Write output files for taxonomic composition of every sample
 write.table(kingdom,"Kingdom.all.tab",sep = "\t",col.names = NA)
 write.table(phyla,"Phyla.all.tab",sep = "\t",col.names = NA)
