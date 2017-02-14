@@ -254,7 +254,7 @@ tax_summary <- tax_summary[!duplicated(row.names(tax_summary)),]
 dir.create("Taxonomic-Binning")
 
 # Set path for all outputs to the new directory
-setwd(newdir)
+setwd("Taxonomic-Binning")
 
 # Write output files for taxonomic composition of every sample
 write.table(kingdom,"Kingdom.all.tab",sep = "\t",col.names = NA)
@@ -264,7 +264,7 @@ write.table(orders,"Orders.all.tab",sep = "\t",col.names = NA)
 write.table(families,"Families.all.tab",sep = "\t",col.names = NA)
 write.table(genera,"Genera.all.tab",sep = "\t",col.names = NA)
 write.table(tax_summary,"tax.summary.all.tab",sep = "\t",col.names = NA)
-suppressWarnings (try(write.table(tax_summary, "../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(tax_summary, "../../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 #################################################################################
 ######                        Write Graphical Output                       ######
