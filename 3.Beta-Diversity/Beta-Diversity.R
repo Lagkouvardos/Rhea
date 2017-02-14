@@ -69,29 +69,6 @@ label_id =c("")
 ######                             Main Script                              ######
 ##################################################################################
 
-###################       Load all required libraries     ########################
-
-# Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","cluster","fpc") 
-
-# Function to check whether the package is installed
-InsPack <- function(pack)
-{
-  if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack,repos ="http://cloud.r-project.org/")
-  } 
-}
-
-# Applying the installation on the list of packages
-lapply(packages, InsPack)
-
-# Make the libraries
-lib <- lapply(packages, require, character.only = TRUE)
-
-# Check if it was possible to install all required libraries
-flag <- all(as.logical(lib))
-
-
 ###################       Read all required input files      ####################
 
 # Load the tab-delimited file containing the values to be analyzed (samples names in the first column)
@@ -321,11 +298,6 @@ write.table( unifract_dist, "distance-matrix-gunif.tab", sep = "\t", col.names =
 
 # Graphical output files are generated in the main part of the script
 
-if(!flag) { stop("
-    It was not possible to install all required R libraries properly.
-                 Please check the installation of all required libraries manually.\n
-                 Required libaries:ade4, GUniFrac, phangorn")
-}
 
 #################################################################################
 ######                           End of Script                             ######

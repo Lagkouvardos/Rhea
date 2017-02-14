@@ -74,27 +74,6 @@ sig.cutoff <- 0.05
 ######                             Main Script                              ######
 ##################################################################################
 
-###################       Load all required libraries     ########################
-
-# Check if required packages are already installed, and install if missing
-packages <-c("plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","grid","ggrepel","gtable","Matrix","cowplot") 
-
-# Function to check whether the package is installed
-InsPack <- function(pack)
-{
-  if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack,repos ="http://cloud.r-project.org/")
-  } 
-}
-
-# Applying the installation on the list of packages
-lapply(packages, InsPack)
-
-# Make the libraries 
-lib <- lapply(packages, require, character.only = TRUE)
-
-# Check if it was possible to install all required libraries
-flag <- all(as.logical(lib))
 
 #####################################################################################################################
 ####                                        Functions to be used  in main Script.                            ########
@@ -835,11 +814,7 @@ cat ("sig.cutoff:",sig.cutoff,"\n","\n")
 sink()
 setwd(OriginalPath)
 
-if(!flag) { stop("
-    It was not possible to install all required R libraries properly.
-                 Please check the installation of all required libraries manually.\n
-                 Required libaries:plotrix,PerformanceAnalytics,reshape,ggplot2,gridExtra,grid,ggrepel,gtable,Matrix,cowplot")
-}
+
 
 ########################################################
 ##    Script Ended !!!!
