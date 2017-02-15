@@ -355,6 +355,8 @@ my_pairs_cutoff <- matrix(my_pairs_cutoff,ncol=6,dimnames = list(c(rep("",times=
 # Create subset of significant pairs with strong correlation (above 0.5)
 my_pairs_cutoff_corr <- my_pairs_cutoff[abs(as.numeric(my_pairs_cutoff[, 3])) >= 0.5, ]
 
+# Remove columns containing no information
+my_cor_matrix <- my_cor_matrix[, colSums(is.na(my_cor_matrix)) != nrow(my_cor_matrix)]
 #################################################################################
 ######                        Generate Graphs                              ######
 #################################################################################
