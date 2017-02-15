@@ -6,14 +6,21 @@
 #' library("name of the missing library)
 
 ##################################################################################
-######                             Main Script                              ###### 
+######             Set parameters in this section manually                  ######
 ##################################################################################
 
+#' Please set the directory of the present script as the working folder
+#' Note: the path is denoted by forward slash "/"
+setwd("D:/path/to/Rhea")
 
+
+######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
+##################################################################################
+######                             Main Script                              ###### 
+##################################################################################
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-
 packages <-c("ade4","GUniFrac","phangorn","cluster",
              "fpc","compare","plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","grid","ggrepel",
              "gtable","Matrix","cowplot", "Hmisc","corrplot")
