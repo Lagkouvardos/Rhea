@@ -23,7 +23,7 @@ setwd("D:/path/to/Rhea")
 # Check if required packages are already installed, and install if missing
 packages <-c("ade4","GUniFrac","phangorn","cluster",
              "fpc","compare","plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","grid","ggrepel",
-             "gtable","Matrix","cowplot", "Hmisc","corrplot")
+             "gtable","Matrix","cowplot", "Hmisc","corrplot","muStat")
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
