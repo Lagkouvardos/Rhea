@@ -74,6 +74,28 @@ sig.cutoff <- 0.05
 ######                             Main Script                              ######
 ##################################################################################
 
+###################       Load all required libraries     ########################
+
+# Check if required packages are already installed, and install if missing
+packages <-c("plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","grid","ggrepel","gtable","Matrix","cowplot") 
+
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack,repos ="http://cloud.r-project.org/")
+  } 
+}
+
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries 
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
+
 
 #####################################################################################################################
 ####                                        Functions to be used  in main Script.                            ########
@@ -777,24 +799,23 @@ dev.off()
 
 # Main file generated after all pre-processing and used for statistical analysis
 # Serial-Group-Comparisons input Table
-write.table(input_table, paste("OTUsCombined-",independant_variable_name,"-modified.txt", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(input_table, paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-modified.txt", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of Kruskal-Wallis test 
-write.table(df[,c(1,2,4)], paste("OTUsCombined-",independant_variable_name,"-pvalues.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(df[,c(1,2,4)], paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-pvalues.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of Wilcoxon Rank Sum Test
-write.table(all_pair_pval_table[,-2], paste("OTUsCombined-",independant_variable_name,"-sign_pairs.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(all_pair_pval_table[,-2], paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-sign_pairs.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of Fisher's Exact Test
-write.table(Fdf, paste("OTUsCombined-",independant_variable_name,"-FisherTestAll.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(Fdf, paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-FisherTestAll.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of pairwise Fisher's Exact Test
-write.table(all_pair_fpval_table[,-2], paste("OTUsCombined-",independant_variable_name,"-FisherTestPairWise.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(all_pair_fpval_table[,-2], paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-FisherTestPairWise.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Input file for correlation script (6.Correlation)
 Corr_input_table <- input_table[,-c(1:(dependant_variables_start-1))]
-#suppressWarnings (try(write.table(Corr_input_table,"../6.Correlations/Corr_input_table.tab", sep = "\t",col.names = NA, quote = FALSE), silent =FALSE))
-suppressWarnings (try(write.table(Corr_input_table, "../../6.Correlations/Corr_input_table.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(Corr_input_table, paste("../../6.Correlations/",strsplit(input_filename,"[.]")[[1]][1],"_","Corr_input_table.tab",sep=""), sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 # Adding log file in analysis
 sink(file = "my_analysis_log.txt")
@@ -814,7 +835,11 @@ cat ("sig.cutoff:",sig.cutoff,"\n","\n")
 sink()
 setwd(OriginalPath)
 
-
+if(!flag) { stop("
+                 It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:plotrix,PerformanceAnalytics,reshape,ggplot2,gridExtra,grid,ggrepel,gtable,Matrix,cowplot")
+}
 
 ########################################################
 ##    Script Ended !!!!

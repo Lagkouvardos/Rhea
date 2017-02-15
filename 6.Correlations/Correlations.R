@@ -46,11 +46,11 @@
 setwd("D:/path/to/Rhea/6.Correlations")                     #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the file name of the table containing the variables for analysis
-input_file <-"Corr_input_table.tab"              #<--- CHANGE ACCORDINGLY !!!
+input_file <-"OTUsCombined_Corr_input_table.tab"              #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the position where the taxonomic variables (OTUs or taxonomic groups) start!!
 #' IMPORTANT: Since the first column in the input file will be used as row names, we do not count it!
-otu_variables_start <- 7                                        #<--- CHANGE ACCORDINGLY !!!
+otu_variables_start <- 10                                        #<--- CHANGE ACCORDINGLY !!!
 
 #################################################################################
 #########         Optional parameters in this section                       #####
@@ -115,6 +115,28 @@ plot_corr_cutoff <- 0.5
 ##################################################################################
 ######                             Main Script                              ######
 ##################################################################################
+
+###################       Load all required libraries     ########################
+
+# Check if required packages are already installed, and install if missing
+packages <-c("Hmisc","corrplot") 
+
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack)
+  } 
+}
+
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
 
 ###################            Read input table              ####################
 # Load the tab-delimited file containing the values to be checked (rownames in the first column)
@@ -469,6 +491,13 @@ write.table(my_pairs_cutoff,"cutoff-pairs-corr-sign.tab",sep = "\t",col.names = 
 
 # Write plotted pairs
 write.table(corr_pval_cutoff,"plotted-pairs-stat.tab",sep = "\t",col.names = NA,quote = FALSE)
+
+
+if(!flag) { stop("
+    It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
+}
 
 
 #################################################################################

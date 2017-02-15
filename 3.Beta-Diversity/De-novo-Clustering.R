@@ -50,6 +50,28 @@ cluster_number = 3                      #<--- CHANGE ACCORDINGLY !!!
 ######                             Main Script                              ######
 ##################################################################################
 
+###################       Load all required libraries     ########################
+
+# Check if required packages are already installed, and install if missing
+packages <-c("cluster","ade4","GUniFrac","phangorn") 
+
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack,repos ="http://cloud.r-project.org/")
+  } 
+}
+
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
+
 
 ###################       Read all required input files      ####################
 
@@ -116,6 +138,12 @@ write.table(meta_file,paste(folder_name,"/","mapping_file.tab",sep=""),sep = "\t
 # Write the modified mapping file and copy in directory Serial-Group-Comparisons if existing
 suppressWarnings (try(write.table(meta_file, "../5.Serial-Group-Comparisons/mapping_file.tab", sep = "\t",col.names = NA, quote = FALSE), silent =TRUE))
 
+
+if(!flag) { stop("
+    It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries:cluster, clusterSim, ade4, GUniFrac, phangorn")
+}
 
 #################################################################################
 ######                           End of Script                             ######

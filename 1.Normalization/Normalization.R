@@ -51,6 +51,28 @@ method <- 0                                   #<--- CHANGE ACCORDINGLY
 ######                             Main Script                              ###### 
 ##################################################################################
 
+###################       Load all required libraries     ########################
+
+# Check if required packages are already installed, and install if missing
+packages <-c("GUniFrac") 
+
+# Function to check whether the package is installed
+InsPack <- function(pack)
+{
+  if ((pack %in% installed.packages()) == FALSE) {
+    install.packages(pack,repos = "http://cloud.r-project.org/")
+  } 
+}
+
+# Applying the installation on the list of packages
+lapply(packages, InsPack)
+
+# Make the libraries
+lib <- lapply(packages, require, character.only = TRUE)
+
+# Check if it was possible to install all required libraries
+flag <- all(as.logical(lib))
+
 ###################       Read all required input files      ####################
 
 # Load the tab-delimited file containing the values to be be checked (rownames in the first column)
@@ -117,6 +139,12 @@ suppressWarnings (try(write.table(rel_otu_table, "../5.Serial-Group-Comparisons/
 write.table(rel_otu_table_tax, "OTUs_Table-norm-rel-tax.tab", sep ="\t",col.names = NA, quote = FALSE)
 suppressWarnings (try(write.table(rel_otu_table_tax, "../4.Taxonomic-Binning/OTUs_Table-norm-rel-tax.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
 
+# Error message 
+if(!flag) { stop("
+                 It was not possible to install all required R libraries properly.
+                 Please check the installation of all required libraries manually.\n
+                 Required libaries: GUniFrac")
+}
 
 #################################################################################
 ######                           End of Script                             ######
