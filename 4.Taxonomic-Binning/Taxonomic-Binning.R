@@ -264,7 +264,7 @@ write.table(orders,"3.Orders.all.tab",sep = "\t",col.names = NA)
 write.table(families,"4.Families.all.tab",sep = "\t",col.names = NA)
 write.table(genera,"5.Genera.all.tab",sep = "\t",col.names = NA)
 write.table(tax_summary,"tax.summary.all.tab",sep = "\t",col.names = NA)
-suppressWarnings (try(write.table(tax_summary, "../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(tax_summary, "../../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 #################################################################################
 ######                        Write Graphical Output                       ######

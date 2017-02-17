@@ -40,6 +40,10 @@ independant_variable_name <- "Diet"
 #' Note: the first column containing sample names does not count!
 dependant_variables_start <- 4
 
+#' Please enter the order of the group names
+#' If no group names are writting groups are ordered automatically
+group_order=c("")
+
 #' Please enter the position in the table (column number) where relative abundances of OTUs or taxonomic groups start
 #' Note: the first column containing sample names does not count!
 taxonomic_variables_start <- 14
@@ -189,7 +193,8 @@ original_table <- read.table (file = input_filename, check.names = FALSE, header
 original_table[,independant_variable_name] <- as.factor(original_table[,independant_variable_name]) 
 
 # Store independent variable columns from original table 
-independent_variable = original_table[[independant_variable_name]]
+independent_variable <- original_table[[independant_variable_name]]
+ifelse(group_order != "", independent_variable <- factor(independent_variable,levels=group_order), independent_variable)
 
 # Store metadata variable columns from original table 
 my_meta_data <- original_table[1:taxonomic_variables_start - 1]
@@ -507,7 +512,8 @@ for (i in dependant_variables_start:dim(input_table)[2])
      if (fish_pvalue <= sig.cutoff || (pvalue <= sig.cutoff & !is.nan(pvalue))) {
        # Generate label for the X-axis
        labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
-       plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""))
+       labeling <- paste(labelsx$Var1,"(",labelsx$Freq,"/",total,")",sep="")
+       plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""),level=labeling)
        x = x + 1
        
        # Determine label of the y-axis
