@@ -37,6 +37,10 @@ input_filename = "OTUsCombined.tab"              #<--- CHANGE ACCORDINGLY !!!
 #' The name of the dependent variable that the analysis will be performed on
 dependant_variable_name <- "Time"
 
+#' Please enter the order of the group names
+#' If no group names are writting groups are ordered automatically
+group_order=c("")
+
 #' The name of the ID variable that the analysis will be performed on
 id_name = "Subject"
 
@@ -187,14 +191,10 @@ original_table <- read.table (file = input_filename, check.names = FALSE, header
 
 # Store repeated time variable columns from original table 
 independent_variable = as.factor(original_table[[dependant_variable_name]])
+ifelse(group_order != "", independent_variable <- factor(independent_variable,levels=group_order), independent_variable)
 
 # Store columns with sample ID information from original table 
 id_variable = as.factor(original_table[[id_name]])
-
-# Convert independent variable into factor to avoid errors
-original_table[,dependant_variable_name] <- as.factor(original_table[,dependant_variable_name]) 
-original_table[,dependant_variable_name] <- as.factor(original_table[,dependant_variable_name]) 
-
 
 # Store metadata variable columns from original table 
 my_meta_data <- original_table[1:taxonomic_variables_start - 1]
@@ -257,7 +257,7 @@ for( i in 1:length){
     bool_names <- bool_names[bool_names != input_table[i,id_name]]
     id_sub <- subset(input_table, input_table[,id_name] == input_table[i,id_name])
     # Which timepoints are already available and which time points are missing
-    missing <- levels(independent_variable)[which(levels(as.factor(input_table[[dependant_variable_name]])) %in% id_sub[,dependant_variable_name]==FALSE)]
+    missing <- levels(independent_variable)[which(levels(factor(input_table[[dependant_variable_name]],levels=group_order)) %in% id_sub[,dependant_variable_name]==FALSE)]
     # Add a line with all missing time points for the i-th ID
     for (j in 1:nlevels(as.factor(missing))) {
       # Add a row to to input_table
@@ -272,14 +272,13 @@ for( i in 1:length){
 
 
 # Store repeated time variable columns from original table 
-independent_variable = as.factor(input_table[[dependant_variable_name]])
+independent_variable = factor(input_table[[dependant_variable_name]],levels=group_order)
 
 # Store columns with sample ID information from original table 
 id_variable = as.factor(input_table[[id_name]])
 
 # Convert independent variable into factor to avoid errors
-input_table[,dependant_variable_name] <- as.factor(input_table[,dependant_variable_name]) 
-input_table[,dependant_variable_name] <- as.factor(input_table[,dependant_variable_name]) 
+input_table[,dependant_variable_name] <- factor(input_table[,dependant_variable_name],levels=group_order) 
 
 
 #####################################################################################################################
@@ -395,7 +394,6 @@ for (i in dependant_variables_start:dim(input_table)[2])
   # Function to assign corrected and not-corrected pvalues  
   if (fail) {
     my_pvalue <- NaN
-    #my_corrected_pvalue <- 0
     fail <- FALSE
   } else {
     
@@ -569,7 +567,8 @@ for (i in dependant_variables_start:dim(input_table)[2])
   if (fish_pvalue <= sig.cutoff || (pvalue <= sig.cutoff& !is.nan(pvalue))) {
     # Generate label for the X-axis
     labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
-    plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""))
+    labeling <- paste(labelsx$Var1,"(",labelsx$Freq,"/",total,")",sep="")
+    plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""),level=labeling)
     x = x + 1
     
     # Determine label of the y-axis
