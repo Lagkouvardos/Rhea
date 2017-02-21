@@ -191,8 +191,12 @@ original_table <- read.table (file = input_filename, check.names = FALSE, header
 
 # Store repeated time variable columns from original table 
 independent_variable = as.factor(original_table[[dependant_variable_name]])
-ifelse(group_order != "", independent_variable <- factor(independent_variable,levels=group_order), independent_variable)
 
+# Check if group_order includes all groups if not the default order will be used
+if(dim(as.data.frame(group_order))[1]!=nlevels(independent_variable)) { 
+  group_order <- levels(independent_variable)
+}
+#ifelse(group_order != "", independent_variable <- factor(independent_variable,levels=group_order), independent_variable)
 # Store columns with sample ID information from original table 
 id_variable = as.factor(original_table[[id_name]])
 
