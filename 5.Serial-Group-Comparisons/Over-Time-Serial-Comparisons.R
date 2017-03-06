@@ -35,7 +35,7 @@ setwd("D:/path/to/Rhea/5.Serial-Group-Comparisons/")  #<--- CHANGE ACCORDINGLY !
 input_filename = "OTUsCombined.tab"              #<--- CHANGE ACCORDINGLY !!!
 
 #' The name of the dependent variable that the analysis will be performed on
-dependant_variable_name <- "Time"
+dependant_variable_name <- "Visit"
 
 #' Please enter the order of the group names
 #' If no group names are writting groups are ordered automatically
@@ -394,7 +394,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
   
   # Performs a Friedman Rank Sum Test with Skillingsmack Test for missing Data
   fit <-  mu.friedman.test(mat,factor(as.vector(col(mat))),factor(as.vector(row(mat))),blkwght="skillingsmack")
-
+  
   # Function to assign corrected and not-corrected pvalues  
   if (fail) {
     my_pvalue <- NaN
@@ -470,7 +470,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
           # Round the p-value down to four decimals 
           ppval_res[i] <- round(fit$p.value,4)
         }
-     
+        
         # Set the values of the pair and the corresponding p-value
         pair_name <- paste (idx_name[1,i],"-", idx_name[2,i],  sep = "")
         pair_num <- paste (idx[1,i],"-", idx[2,i],  sep = "")
