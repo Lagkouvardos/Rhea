@@ -95,11 +95,11 @@ This is where the actual R commands start and based on the variables set by the 
 	taxonomy <- as.vector(otu_table$taxonomy)
 
 ### Requirements
-In order to run the scripts, it is important to have the R language and environment installed first [(available here)](https://www.r-project.org/ "R download site"). We strongly recommend using the R-studio to simplify implementation and enhance productivity [(available here)](https://www.rstudio.com/products/rstudio-desktop/ "R-studio download site"). Required packages will be automatically installed the first time the scripts are run. Hence, internet connection is required at least for first use. The scripts are platform independent and should work in all systems that support R.
+In order to run the scripts, it is important to have the R language and environment installed first [(available here)](https://www.r-project.org/ "R download site"). We strongly recommend using the R-studio to simplify implementation and enhance productivity [(available here)](https://www.rstudio.com/products/rstudio-desktop/ "R-studio download site"). Required packages would be automatically installed the first time the scripts are run so internet connection at least for the first time is expected. The scripts are platform independent and should work in all systems that support R.
 
 
 ### Installation
-No installation is required for Rhea. After downloading the Rhea project, decompress the files in the desired destination and they are ready to use. We recommend keeping one copy of the Rhea files in each study to avoid mixing up different analyses. We also recommend looking for new and improved versions of Rhea from time to time as the project, as all living entities, will evolve. 
+No installation is required for Rhea. After downloading the Rhea project, decompress the files in the desired destination and they are ready to use. For a smoother experience, we recommend running the install_packages.R script first. This script will install automatically all the packages required by Rhea scripts. Packages that for any reason cannot be installed automatically will be identified and noted in a report. Running this script in advance will reduce waiting times and ensure smooth execution of Rhea main scripts later. We recommend keeping one copy of the Rhea files in each study to avoid mixing up different analyses. We also recommend looking for new and improved versions of Rhea from time to time as the project, as all living entities, will evolve. 
 
 ### Citation
 
