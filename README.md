@@ -105,4 +105,4 @@ No installation is required for Rhea. After downloading the Rhea project, decomp
 
 If you use Rhea in your work, please cite the original publication:
 
-Lagkouvardos I., Fischer S., Kumar N., Clavel T. (2016) Rhea: A transparent and modular R pipeline for microbial profiling based on 16S rRNA gene amplicons. In review
+Lagkouvardos I, Fischer S, Kumar N, Clavel T. (2017) Rhea: a transparent and modular R pipeline for microbial profiling based on 16S rRNA gene amplicons. PeerJ 5:e2836 https://doi.org/10.7717/peerj.2836 

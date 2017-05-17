@@ -51,7 +51,6 @@ method <- 0                                   #<--- CHANGE ACCORDINGLY
 ######                             Main Script                              ###### 
 ##################################################################################
 
-
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
@@ -74,7 +73,6 @@ lib <- lapply(packages, require, character.only = TRUE)
 # Check if it was possible to install all required libraries
 flag <- all(as.logical(lib))
 
-
 ###################       Read all required input files      ####################
 
 # Load the tab-delimited file containing the values to be be checked (rownames in the first column)
@@ -86,6 +84,9 @@ otu_table <-  read.table (file_name,
                           row.names = 1,
                           comment.char = "")
 
+
+# Clean table from empty lines
+otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
 
 ####################       Normalize OTU Table          ###################
 

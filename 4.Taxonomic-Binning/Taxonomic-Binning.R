@@ -40,6 +40,7 @@ setwd("D:/path/to/Rhea/4.Taxonomic-Binning") #<--- CHANGE ACCORDINGLY
 #' Please give the file name of the OTU-table containing relative abundances and taxonomic classification 
 otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
@@ -56,6 +57,9 @@ otu_table <-  read.table (otu_file,
                           sep = "\t",
                           row.names = 1,
                           comment.char = "")
+
+# Clean table from empty lines
+otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
 
 # Create a dataframe with a number of rows identical to the number of OTUs in the dataset
 taxonomy <- otu_table[,dim(otu_table)[2]]
@@ -246,15 +250,21 @@ tax_summary <- tax_summary[!duplicated(row.names(tax_summary)),]
 ######                        Write Output Files                           ######
 #################################################################################
 
+# Create a directory 
+dir.create("Taxonomic-Binning")
+
+# Set path for all outputs to the new directory
+setwd("Taxonomic-Binning")
+
 # Write output files for taxonomic composition of every sample
-write.table(kingdom,"Kingdom.all.tab",sep = "\t",col.names = NA)
-write.table(phyla,"Phyla.all.tab",sep = "\t",col.names = NA)
-write.table(classes,"Classes.all.tab",sep = "\t",col.names = NA)
-write.table(orders,"Orders.all.tab",sep = "\t",col.names = NA)
-write.table(families,"Families.all.tab",sep = "\t",col.names = NA)
-write.table(genera,"Genera.all.tab",sep = "\t",col.names = NA)
+write.table(kingdom,"0.Kingdom.all.tab",sep = "\t",col.names = NA)
+write.table(phyla,"1.Phyla.all.tab",sep = "\t",col.names = NA)
+write.table(classes,"2.Classes.all.tab",sep = "\t",col.names = NA)
+write.table(orders,"3.Orders.all.tab",sep = "\t",col.names = NA)
+write.table(families,"4.Families.all.tab",sep = "\t",col.names = NA)
+write.table(genera,"5.Genera.all.tab",sep = "\t",col.names = NA)
 write.table(tax_summary,"tax.summary.all.tab",sep = "\t",col.names = NA)
-suppressWarnings (try(write.table(tax_summary, "../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(tax_summary, "../../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 #################################################################################
 ######                        Write Graphical Output                       ######

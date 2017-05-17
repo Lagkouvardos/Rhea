@@ -40,6 +40,10 @@ independant_variable_name <- "Diet"
 #' Note: the first column containing sample names does not count!
 dependant_variables_start <- 4
 
+#' Please enter the order of the group names
+#' If no group names are writting groups are ordered automatically
+group_order=c("")
+
 #' Please enter the position in the table (column number) where relative abundances of OTUs or taxonomic groups start
 #' Note: the first column containing sample names does not count!
 taxonomic_variables_start <- 14
@@ -55,6 +59,8 @@ prevalence_cutoff <- 0.3
 max_median_cutoff <- 1
 
 #' Replace 0 Value with NA 
+#' YES: Replace zeros with NA (Default)
+#' NO: Consider zeros in statistics
 ReplaceZero = "YES"
 
 #' Set the graphical output parameter 
@@ -63,7 +69,7 @@ ReplaceZero = "YES"
 #' 3 = with individual values as dots and with sample names
 PlotOption = 1
 
-#set the significance cutoff level
+#' Set the significance cutoff level (default cutoff is 0.05 but it can be set lower)
 sig.cutoff <- 0.05
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
@@ -94,6 +100,7 @@ lib <- lapply(packages, require, character.only = TRUE)
 # Check if it was possible to install all required libraries
 flag <- all(as.logical(lib))
 
+
 #####################################################################################################################
 ####                                        Functions to be used  in main Script.                            ########
 #####################################################################################################################
@@ -116,13 +123,12 @@ abundance.fix <- function(data)
 # Replace zero value with NA 
 fill_zero.NA <- function(data,ReplaceZero)
 {
-  if (missing(ReplaceZero)) {
-    ReplaceZero == "NO"
-  }
-  if (ReplaceZero == "YES") {
+  if (ReplaceZero == "NO") {
+    return(data)
+  } else if (ReplaceZero == "YES") {
     data[data == 0] <- NA
     return(data)
-  }else{
+  } else {
     return(data)
   }
 }
@@ -187,7 +193,8 @@ original_table <- read.table (file = input_filename, check.names = FALSE, header
 original_table[,independant_variable_name] <- as.factor(original_table[,independant_variable_name]) 
 
 # Store independent variable columns from original table 
-independent_variable = original_table[[independant_variable_name]]
+independent_variable <- original_table[[independant_variable_name]]
+ifelse(group_order != "", independent_variable <- factor(independent_variable,levels=group_order), independent_variable)
 
 # Store metadata variable columns from original table 
 my_meta_data <- original_table[1:taxonomic_variables_start - 1]
@@ -505,7 +512,8 @@ for (i in dependant_variables_start:dim(input_table)[2])
      if (fish_pvalue <= sig.cutoff || (pvalue <= sig.cutoff & !is.nan(pvalue))) {
        # Generate label for the X-axis
        labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
-       plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""))
+       labeling <- paste(labelsx$Var1,"(",labelsx$Freq,"/",total,")",sep="")
+       plot_df$xlabeltext <- factor(paste(plot_df$variable,"(",labelsx[match(plot_df$variable,labelsx$Var1),"Freq"],"/",prevalence_list,")",sep = ""),level=labeling)
        x = x + 1
        
        # Determine label of the y-axis
@@ -797,24 +805,23 @@ dev.off()
 
 # Main file generated after all pre-processing and used for statistical analysis
 # Serial-Group-Comparisons input Table
-write.table(input_table, paste("OTUsCombined-",independant_variable_name,"-modified.txt", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(input_table, paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-modified.txt", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of Kruskal-Wallis test 
-write.table(df[,c(1,2,4)], paste("OTUsCombined-",independant_variable_name,"-pvalues.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(df[,c(1,2,4)], paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-pvalues.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of Wilcoxon Rank Sum Test
-write.table(all_pair_pval_table[,-2], paste("OTUsCombined-",independant_variable_name,"-sign_pairs.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(all_pair_pval_table[,-2], paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-sign_pairs.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of Fisher's Exact Test
-write.table(Fdf, paste("OTUsCombined-",independant_variable_name,"-FisherTestAll.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(Fdf, paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-FisherTestAll.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Table with the results of pairwise Fisher's Exact Test
-write.table(all_pair_fpval_table[,-2], paste("OTUsCombined-",independant_variable_name,"-FisherTestPairWise.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
+write.table(all_pair_fpval_table[,-2], paste(strsplit(input_filename,"[.]")[[1]][1],"-",independant_variable_name,"-FisherTestPairWise.tab", sep = ""), sep = "\t", col.names = NA, quote = FALSE)
 
 # Input file for correlation script (6.Correlation)
 Corr_input_table <- input_table[,-c(1:(dependant_variables_start-1))]
-#suppressWarnings (try(write.table(Corr_input_table,"../6.Correlations/Corr_input_table.tab", sep = "\t",col.names = NA, quote = FALSE), silent =FALSE))
-suppressWarnings (try(write.table(Corr_input_table, "../../6.Correlations/Corr_input_table.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(Corr_input_table, paste("../../6.Correlations/",strsplit(input_filename,"[.]")[[1]][1],"_","Corr_input_table.tab",sep=""), sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 # Adding log file in analysis
 sink(file = "my_analysis_log.txt")
@@ -830,11 +837,12 @@ cat ("prevalence_cutoff:",prevalence_cutoff,"\n","\n")
 cat ("max_median_cutoff:",max_median_cutoff,"\n","\n")
 cat ("PlotOption:",PlotOption,"\n","\n")
 cat ("ReplaceZero:",ReplaceZero,"\n","\n")
+cat ("sig.cutoff:",sig.cutoff,"\n","\n")
 sink()
 setwd(OriginalPath)
 
 if(!flag) { stop("
-    It was not possible to install all required R libraries properly.
+                 It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
                  Required libaries:plotrix,PerformanceAnalytics,reshape,ggplot2,gridExtra,grid,ggrepel,gtable,Matrix,cowplot")
 }

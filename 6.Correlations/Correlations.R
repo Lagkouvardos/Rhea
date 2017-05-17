@@ -46,11 +46,11 @@
 setwd("D:/path/to/Rhea/6.Correlations")                     #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the file name of the table containing the variables for analysis
-input_file <-"correlation-input-table.tab"              #<--- CHANGE ACCORDINGLY !!!
+input_file <-"OTUsCombined_Corr_input_table.tab"              #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the position where the taxonomic variables (OTUs or taxonomic groups) start!!
 #' IMPORTANT: Since the first column in the input file will be used as row names, we do not count it!
-otu_variables_start <- 7                                        #<--- CHANGE ACCORDINGLY !!!
+otu_variables_start <- 10                                        #<--- CHANGE ACCORDINGLY !!!
 
 #################################################################################
 #########         Optional parameters in this section                       #####
@@ -125,7 +125,7 @@ packages <-c("Hmisc","corrplot")
 InsPack <- function(pack)
 {
   if ((pack %in% installed.packages()) == FALSE) {
-    install.packages(pack,repos ="http://cloud.r-project.org/")
+    install.packages(pack)
   } 
 }
 
@@ -151,6 +151,8 @@ my_data <-
     comment.char = ""
   )
 
+# Clean table from empty lines
+my_data <- my_data[!apply(is.na(my_data) | my_data=="",1,all),]
 ####################            Functions                  #####################
 
 # Function for filling missing values with the mean of the column
@@ -353,6 +355,8 @@ my_pairs_cutoff <- matrix(my_pairs_cutoff,ncol=6,dimnames = list(c(rep("",times=
 # Create subset of significant pairs with strong correlation (above 0.5)
 my_pairs_cutoff_corr <- my_pairs_cutoff[abs(as.numeric(my_pairs_cutoff[, 3])) >= 0.5, ]
 
+# Remove columns containing no information
+my_cor_matrix <- my_cor_matrix[, colSums(is.na(my_cor_matrix)) != nrow(my_cor_matrix)]
 #################################################################################
 ######                        Generate Graphs                              ######
 #################################################################################
@@ -490,10 +494,11 @@ write.table(my_pairs_cutoff,"cutoff-pairs-corr-sign.tab",sep = "\t",col.names = 
 # Write plotted pairs
 write.table(corr_pval_cutoff,"plotted-pairs-stat.tab",sep = "\t",col.names = NA,quote = FALSE)
 
+
 if(!flag) { stop("
     It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
-                 Required libaries: Hmisc, corrplot")
+                 Required libaries:ade4, GUniFrac, phangorn, randomcoloR, Rcpp")
 }
 
 

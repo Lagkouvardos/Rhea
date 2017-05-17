@@ -55,13 +55,33 @@ lib <- lapply(packages, require, character.only = TRUE)
 
 # Check if it was possible to install all required libraries
 flag <- all(as.logical(lib))
+
 ###################            Read input table              ####################
 
-# Reading all files
+# Reading Alpha diversity file
 alpha <- read.table(file=alpha,header=TRUE,sep="\t",row.names=1,check.names = F) 
+
+# Clean table from empty lines
+alpha <- alpha[!apply(is.na(alpha) | alpha=="",1,all),]
+
+# Read OTU table 
 RelativeAbundanceOTUs <-as.data.frame(t(read.table(file=RelativeAbundanceOTUs,header=TRUE,sep="\t",row.names = 1,check.names = F)))
+
+# Clean table from empty lines
+RelativeAbundanceOTUs <- RelativeAbundanceOTUs[!apply(is.na(RelativeAbundanceOTUs) | RelativeAbundanceOTUs=="",1,all),]
+
+# Read Mapping file
 MetaFile <- read.table(file=MetaFile,header=TRUE,sep="\t",comment.char = "",row.names = 1,check.names = F)
+
+# Clean table from empty lines
+MetaFile <- MetaFile[!apply(is.na(MetaFile) | MetaFile=="",1,all),]
+
+# Read taxonomy file
 TaxanomyAll <- read.table(file=TaxanomyAll,header=TRUE,sep="\t",row.names=NULL,check.names = F)
+
+# Clean table from empty lines
+TaxanomyAll <- TaxanomyAll[!apply(is.na(TaxanomyAll) | TaxanomyAll=="",1,all),]
+
 ColnameTo_assign<- TaxanomyAll[,1]
 TaxanomyAll[,1] <- NULL
 TaxanomyAll <- as.data.frame(t(TaxanomyAll))
