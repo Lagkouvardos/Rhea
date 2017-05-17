@@ -74,6 +74,10 @@ PlotOption = 1
 #' Set the significance cutoff level (default cutoff is 0.05 but it can be set lower)
 sig.cutoff <- 0.05
 
+#' Missing values are removed by default ("NO").
+#' If missing values should be replaced by Skillings-Mack method please change this parameter to "YES"
+ReplaceMissingValues ="NO"
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
@@ -392,9 +396,16 @@ for (i in dependant_variables_start:dim(input_table)[2])
   # Remove lines where no information is available for all time points
   mat <- mat[rowSums(is.na(mat)) !=  nlevels(independent_variable), ]
   
-  # Performs a Friedman Rank Sum Test with Skillingsmack Test for missing Data
-  fit <-  mu.friedman.test(mat,factor(as.vector(col(mat))),factor(as.vector(row(mat))),blkwght="skillingsmack")
-  
+  if (ReplaceMissingValues == "NO"){
+    # Remove lines with missing values completely
+    mat <- mat[rowSums(is.na(mat))==0,]
+    # Perfroms Firedman Test if more than one samples remain after removing missing values
+    fit <- tryCatch (friedman.test(mat),error = function(i) {fail <<- TRUE})
+  } else{
+    # Performs a Friedman Rank Sum Test with Skillingsmack Test for missing Data
+    fit <-  tryCatch (mu.friedman.test(mat,factor(as.vector(col(mat))),factor(as.vector(row(mat))),blkwght="skillingsmack"),error = function(i) {fail <<- TRUE})
+    
+  }
   # Function to assign corrected and not-corrected pvalues  
   if (fail) {
     my_pvalue <- NaN
