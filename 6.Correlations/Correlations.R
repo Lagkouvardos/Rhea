@@ -475,7 +475,21 @@ dev.off()
 #################################################################################
 ######                        Write Output Files                           ######
 #################################################################################
+# Take current path in one variable to store results in seperate folders in further steps
+OriginalPath <- getwd()
 
+# Take the name of the inputfile to name the folder
+prefix = paste(strsplit(input_filename,"[.]")[[1]][1],sep="_")
+
+# Make a directory name with inputfile name and date
+newdir <- paste(prefix,Sys.Date(), sep = "_")
+
+# Create a directory 
+dir.create(newdir)
+
+# Set path for all outputs to the new directory
+setwd(newdir)
+                    
 # Write the log-scale transformed table
 write.table(my_scaled_data,"transformed.tab",sep = "\t",col.names = NA,quote = FALSE)
 
