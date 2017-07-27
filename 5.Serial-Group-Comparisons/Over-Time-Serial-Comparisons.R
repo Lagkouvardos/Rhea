@@ -460,7 +460,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
   idx_name <- combn(levels(independent_variable), 2)
   
   # If a pvalue is calculated out of the Friedman Test, the pairwise Wilcox Signed Rank Test will be computed as well 
-  if (!is.nan(pvalue)){
+  if (!is.na(pvalue)){
     if (pvalue <= sig.cutoff){
       # Compute p-values from Wilcoxon test for all comparisons
       ppval_res <- numeric(ncol(idx))
@@ -579,7 +579,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
   
   # Check if at least one of the tests (Friedman or Fisher) is signficant 
   # If at least one of them is signficant a plot will be generated
-  if (fish_pvalue <= sig.cutoff || (pvalue <= sig.cutoff& !is.nan(pvalue))) {
+  if (fish_pvalue <= sig.cutoff || (pvalue <= sig.cutoff& !is.na(pvalue))) {
     # Generate label for the X-axis
     labelsx <- as.data.frame(table(plot_df[!is.na(plot_df_prevalence[,1]),2]))
     labeling <- paste(labelsx$Var1,"(",labelsx$Freq,"/",total,")",sep="")
