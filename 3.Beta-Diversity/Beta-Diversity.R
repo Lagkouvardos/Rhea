@@ -169,24 +169,27 @@ file_name <- paste(group_name,"beta-diversity.pdf",sep="_")
 pdf(paste(group_name,"/",file_name,sep=""))
 
 # Calculate the significance of variance to compare multivariate sample means (including two or more dependent variables)
-adonis<-adonis(as.dist(unifract_dist) ~ all_groups)
-all_groups<-factor(all_groups,levels(all_groups)[unique(all_groups)])
+# Omit cases where there isn't data for the sample (NA)
+all_groups_comp <- all_genes[!is.na(all_groups)]
+unifract_dist_comp <- unifract_dist[, !is.na(all_groups)]
+adonis<-adonis(as.dist(unifract_dist_comp) ~ all_groups_comp)
+all_groups_comp<-factor(all_groups_comp,levels(all_groups_comp)[unique(all_groups_comp)])
 
 # Calculate and display the MDS plot (Multidimensional Scaling plot)
 s.class(
-  cmdscale(unifract_dist, k = 2), col = unique(plot_color), cpoint =
-    2, fac = all_groups, sub = paste("MDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
+  cmdscale(unifract_dist_comp, k = 2), col = unique(plot_color), cpoint =
+    2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
 )
 if (label_samples==1) {
-  lab_samples <- row.names(cmdscale(unifract_dist, k = 2))
+  lab_samples <- row.names(cmdscale(unifract_dist_comp, k = 2))
   ifelse (label_id != "",lab_samples <- replace(lab_samples, !(lab_samples %in% label_id), ""), lab_samples)
-  text(cmdscale(unifract_dist, k = 2),labels=lab_samples,cex=0.7,adj=c(-.1,-.8))
+  text(cmdscale(unifract_dist_comp, k = 2),labels=lab_samples,cex=0.7,adj=c(-.1,-.8))
 }
 
 # Calculate and display the NMDS plot (Non-metric Multidimensional Scaling plot)
-meta <- metaMDS(unifract_dist,k = 2)
+meta <- metaMDS(unifract_dist_comp,k = 2)
 s.class(
-  meta$points, col = unique(plot_color), cpoint = 2, fac = all_groups,
+  meta$points, col = unique(plot_color), cpoint = 2, fac = all_groups_comp,
   sub = paste("metaNMDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
 )
 if (label_samples==1){
@@ -203,7 +206,7 @@ dev.off()
 # This plot is only generated if there are more than two groups included in the comparison
 # Calculate the pairwise significance of variance for group pairs
 # Get all groups contained in the mapping file
-unique_groups <- levels(all_groups)
+unique_groups <- levels(all_groups_comp)
 if (dim(table(unique_groups)) > 2) {
 
 # Initialise vector and lists
@@ -229,7 +232,7 @@ for (i in 1:length(combn(unique_groups,2)[1,])) {
                       meta_file[,meta_file_pos] == pair_2))
   
   # Convert UniFrac distance matrix to data frame
-  paired_dist <- as.data.frame(unifract_dist)
+  paired_dist <- as.data.frame(unifract_dist_comp)
   
   # Save all row names of the mapping file
   row_names <- rownames(paired_dist)
@@ -258,8 +261,8 @@ for (i in 1:length(combn(unique_groups,2)[1,])) {
   pairedMatrixList[[i]] <- paired_matrix
   
   # Applies multivariate analysis to a pair out of the selected groups
-  adonis <- adonis(paired_matrix ~ all_groups[all_groups == pair_1 |
-                                            all_groups == pair_2])
+  adonis <- adonis(paired_matrix ~ all_groups_comp[all_groups_comp == pair_1 |
+                                            all_groups_comp == pair_2])
   
   # List p-values
   pVal[i] <- adonis[[1]][6][[1]][1]
@@ -277,9 +280,9 @@ for(i in 1:length(combn(unique_groups,2)[1,])){
     meta <- metaMDS(pairedMatrixList[[i]], k = 2)
     s.class(
       meta$points,
-      col = rainbow(length(levels(all_groups))), cpoint = 2,
-      fac = as.factor(all_groups[all_groups == pair_1_list[i] |
-                                   all_groups == pair_2_list[i]]),
+      col = rainbow(length(levels(all_groups_comp))), cpoint = 2,
+      fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
+                                   all_groups_comp == pair_2_list[i]]),
       sub = paste("NMDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n(p-value ",pVal[i],","," corr. p-value ", pVal_BH[i],")",sep="")
     )
 }
@@ -296,7 +299,7 @@ for (k in 1:(dim(otu_file)[1]-1)) {
     nclusters[k]=NA 
   } else {
     # Partitioning the data into k clusters (max k is number of samples within the dataset)
-    data_cluster=as.vector(pam(as.dist(unifract_dist), k, diss=TRUE)$clustering)
+    data_cluster=as.vector(pam(as.dist(unifract_dist_comp), k, diss=TRUE)$clustering)
     
     # Calculate Calinski-Harabasz Index 
     nclusters[k]=calinhara(otu_file,data_cluster,k)
@@ -316,8 +319,8 @@ dev.off()
 
 # Write the distance matrix table in a file
 file_name <- paste(group_name,"distance-matrix-gunif.tab",sep="_")
-write.table( unifract_dist, paste(group_name,"/",file_name,sep=""), sep = "\t", col.names = NA, quote = FALSE)
-write.table( unifract_dist, "distance-matrix-gunif.tab", sep = "\t", col.names = NA, quote = FALSE)
+write.table( unifract_dist_comp, paste(group_name,"/",file_name,sep=""), sep = "\t", col.names = NA, quote = FALSE)
+write.table( unifract_dist_comp, "distance-matrix-gunif.tab", sep = "\t", col.names = NA, quote = FALSE)
 
 # Graphical output files are generated in the main part of the script
 if(!flag) { stop("
