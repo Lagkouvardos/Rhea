@@ -4,13 +4,13 @@
 
 
 
-##Introduction
+## Introduction
 
 The importance of 16S rRNA gene amplicon profiles for understanding the influence of microbes in a variety of environments coupled with the steep reduction in sequencing costs led to a surge of microbial sequencing projects. The expanding crowd of scientists and clinicians wanting to make use of sequencing datasets can choose among a range of multipurpose software platforms, the use of which can be intimidating for non-expert users. Among available pipeline options for high-throughput 16S rRNA gene analysis, the R programming language and software environment for statistical computing stands out for its power and increased flexibility, and the possibility to adhere to most recent best practices and to adjust to individual project needs. Here we present the Rhea pipeline, a set of R scripts that encode a series of well-documented choices for the downstream analysis of Operational Taxonomic Unit (OTU) tables, including normalization steps, alpha- and beta-diversity analysis, taxonomic composition, statistical comparisons, and calculation of correlations. Rhea is primarily a straightforward starting point for beginners, but can also be a framework for advanced users who can modify and expand the tool. As the community standards evolve, Rhea will adapt to always represent the current state-of-the-art in microbial profiles analysis in the clear and comprehensive way allowed by the R language.  
 
 ## Description
 
-###Organization
+### Organization
 
 Rhea is composed of 6 steps that can be run independently or as a set. 
 
@@ -23,7 +23,7 @@ Rhea is composed of 6 steps that can be run independently or as a set.
 
 Running them in the given order simplifies the process as the outputs of each step are often the inputs of the next. There is also an extra folder where the original data is recommended to be placed to keep the analysis of one study in a compact and organized structure. Inside the 0.Original-Data folder, there is another folder containing the template files that served as basis for the Rhea presentation that can be used for training purposes. For a quick and effective way to obtain OTU-tables and other required files for analysis in Rhea, when starting from raw sequencing data, please use the analysis functionality of IMNGS (www.imngs.org). The output of the UPARSE-based clustering (Edgar, 2013) of sequences to OTUs is fully compatible with the Rhea scripts. Before running any script, please make sure you have read and fully understood the corresponding ReadMe file that can be found in each folder.
 
-###Script structure
+### Script structure
 
 All R scripts in Rhea follow a common structure designed to help easy implementation by users. Therefore, each script contains a Commentary, Initialization, and Main section. These sections are explained in detail below:
 
