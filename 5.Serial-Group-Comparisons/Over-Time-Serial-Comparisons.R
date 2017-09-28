@@ -35,14 +35,14 @@ setwd("D:/path/to/Rhea/5.Serial-Group-Comparisons/")  #<--- CHANGE ACCORDINGLY !
 input_filename = "overtime-input-table.tab"              #<--- CHANGE ACCORDINGLY !!!
 
 #' The name of the dependent variable that the analysis will be performed on (different time points)
-dependant_variable_name <- "TimePoint"
+dependant_variable_name <- "TimePoints"
 
 #' Please enter the order of the group names
 #' If no group names are writting groups are ordered automatically
 group_order=c("")
 
 #' The name of the ID variable that the analysis will be performed on (the id of the subject that was followed overtime)
-id_name = "Participant_ID"
+id_name = "Participant.ID"
 
 #' Please enter the position in the table (column number) where the dependant variable starts (e.g. Richness)
 #' Note: the first column containing sample names does not count!
