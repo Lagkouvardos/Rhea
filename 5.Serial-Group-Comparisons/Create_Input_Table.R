@@ -1,7 +1,7 @@
 # This R script prepares two files (All TAXA and All OTUS) as inputs for the Serial-Group-Comparisons Script.
 
 #************************
-# A total of 4 files is required for merging. 
+# A total of 4 files is required for merging.
 # 1. A file containing the alpha-diversity measures.
 # 2. A file with the normalized relative abundances of OTUs across samples.
 # 3. A file with the relative abundances of existing taxonomic groups.
@@ -31,26 +31,26 @@ MetaFile <- "mapping_file.tab";                         #<--- CHANGE ACCORDINGLY
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
-######                             Main Script                              ###### 
+######                             Main Script                              ######
 ##################################################################################
 
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("compare") 
+packages <-c("compare")
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
 {
   if ((pack %in% installed.packages()) == FALSE) {
     install.packages(pack,repos ="http://cloud.r-project.org/")
-  } 
+  }
 }
 
 # Applying the installation on the list of packages
 lapply(packages, InsPack)
 
-# Make the libraries 
+# Make the libraries
 lib <- lapply(packages, require, character.only = TRUE)
 
 # Check if it was possible to install all required libraries
@@ -59,12 +59,12 @@ flag <- all(as.logical(lib))
 ###################            Read input table              ####################
 
 # Reading Alpha diversity file
-alpha <- read.table(file=alpha,header=TRUE,sep="\t",row.names=1,check.names = F) 
+alpha <- read.table(file=alpha,header=TRUE,sep="\t",row.names=1,check.names = F)
 
 # Clean table from empty lines
 alpha <- alpha[!apply(is.na(alpha) | alpha=="",1,all),]
 
-# Read OTU table 
+# Read OTU table
 RelativeAbundanceOTUs <-as.data.frame(t(read.table(file=RelativeAbundanceOTUs,header=TRUE,sep="\t",row.names = 1,check.names = F)))
 
 # Clean table from empty lines
@@ -110,9 +110,9 @@ if(compareIgnoreOrder(row.names(TaxanomyAll),row.names((MetaFile)))$result & com
   write.table(combine_taxa,file="TaxaCombined.tab",sep="\t",row.names=FALSE)
   write.table(combine_OTUs,file="OTUsCombined.tab",sep="\t",row.names=FALSE)
   print("Files are combined successfully")
-}else{ 
-  print("ATTENTION !!!! Sample names differ across files. Script aborted.")
-  print("Please ensure that identical sample names are used.")
+}else{
+  stop("ATTENTION !!!! Sample names differ across files. Script aborted.",
+       "Please ensure that identical sample names are used.")
 }
 
 if(!flag) { stop("
