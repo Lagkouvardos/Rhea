@@ -105,11 +105,12 @@ combine_OTUs<-combine_OTUs[,c(ncol(combine_OTUs),1:(ncol(combine_OTUs)-1))]# rep
 #################################################################################
 
 # Writing tables
-if(compareIgnoreOrder(row.names(TaxanomyAll),row.names((MetaFile)))$result & compareIgnoreOrder(row.names(alpha),row.names((MetaFile)))$result
-   & compareIgnoreOrder(row.names(RelativeAbundanceOTUs),row.names((MetaFile)))$result){
+if(compareIgnoreOrder(row.names(TaxanomyAll),row.names((MetaFile)))$result &
+   compareIgnoreOrder(row.names(alpha),row.names((MetaFile)))$result &
+   compareIgnoreOrder(row.names(RelativeAbundanceOTUs),row.names((MetaFile)))$result){
   write.table(combine_taxa,file="TaxaCombined.tab",sep="\t",row.names=FALSE)
   write.table(combine_OTUs,file="OTUsCombined.tab",sep="\t",row.names=FALSE)
-  print("Files are combined successfully")
+  message("Files are combined successfully")
 }else{
   stop("ATTENTION !!!! Sample names differ across files. Script aborted.",
        "Please ensure that identical sample names are used.")
