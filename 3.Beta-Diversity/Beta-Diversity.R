@@ -170,7 +170,7 @@ pdf(paste(group_name,"/",file_name,sep=""))
 
 # Calculate the significance of variance to compare multivariate sample means (including two or more dependent variables)
 # Omit cases where there isn't data for the sample (NA)
-all_groups_comp <- all_genes[!is.na(all_groups)]
+all_groups_comp <- all_groups[!is.na(all_groups)]
 unifract_dist_comp <- unifract_dist[, !is.na(all_groups)]
 adonis<-adonis(as.dist(unifract_dist_comp) ~ all_groups_comp)
 all_groups_comp<-factor(all_groups_comp,levels(all_groups_comp)[unique(all_groups_comp)])
