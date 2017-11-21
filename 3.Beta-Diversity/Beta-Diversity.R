@@ -63,6 +63,10 @@ label_samples = 0
 #' If more than one sample should be plotted, please separate their IDs by comma (e.g. c("sample1","sample2"))
 label_id =c("")
 
+#' De-Novo Clustering will be perfomed for the number of samples or maximal for the set limit
+#' Default Limit is 100
+kmers_limit=100
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
@@ -100,11 +104,14 @@ otu_file <- read.table (file = input_otu, check.names = FALSE, header = TRUE, de
 # Clean table from empty lines
 otu_file <- otu_file[!apply(is.na(otu_file) | otu_file =="",1,all),]
 
+# Save the column names of the mapping file
+mappingVar <- names(meta_file)
+
 # Load the mapping file containing individual sample information (sample names in the first column)
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
 # Clean table from empty lines
-meta_file <- meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),]
+meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),],row.names=row.names(meta_file))
 
 # Load the phylogenetic tree calculated from the OTU sequences 
 tree_file <- read.tree(input_tree)
@@ -122,7 +129,10 @@ otu_file <- otu_file[,order(names(otu_file))]
 otu_file <- data.frame(t(otu_file))
 
 # Order the mapping file by sample names (ascending)
-meta_file <- meta_file[order(row.names(meta_file)),]
+meta_file <- data.frame(meta_file[order(row.names(meta_file)),],row.names=row.names(meta_file))
+
+# Assign the column names to the modified mapping file
+names(meta_file) <- mappingVar
 
 # Save the position of the target group name in the mapping file
 meta_file_pos <- which(colnames(meta_file) == group_name)
@@ -293,8 +303,10 @@ dev.off()
 ######                        Determine number of clusters                           ######
 
 nclusters=NULL
-
-for (k in 1:(dim(otu_file)[1]-1)) { 
+if (dim(otu_file)[1]-1 <= kmers_limit) {
+  kmers_limit=dim(otu_file)[1]-1
+}
+for (k in 1:kmers_limit) { 
   if (k==1) {
     nclusters[k]=NA 
   } else {
@@ -303,6 +315,7 @@ for (k in 1:(dim(otu_file)[1]-1)) {
     
     # Calculate Calinski-Harabasz Index 
     nclusters[k]=calinhara(otu_file,data_cluster,k)
+    print(k)
   }
 }
 
