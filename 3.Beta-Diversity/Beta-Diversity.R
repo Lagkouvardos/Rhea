@@ -104,11 +104,11 @@ otu_file <- read.table (file = input_otu, check.names = FALSE, header = TRUE, de
 # Clean table from empty lines
 otu_file <- otu_file[!apply(is.na(otu_file) | otu_file =="",1,all),]
 
-# Save the column names of the mapping file
-mappingVar <- names(meta_file)
-
 # Load the mapping file containing individual sample information (sample names in the first column)
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
+
+# Save the column names of the mapping file
+mappingVar <- names(meta_file)
 
 # Clean table from empty lines
 meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),],row.names=row.names(meta_file))
