@@ -209,15 +209,9 @@ my_otu_mod =  as.data.frame(apply(my_otu_data,2,abundance.fix))
 # Column consisting of "NA" or "0" only are removed (see below)
 my_otu_mod_noz = as.data.frame(apply(my_otu_mod,2,fill_zero.NA,ReplaceZero))
 
-# Save column names for columns without zeros
-namesHeader <- apply(my_otu_mod_noz , 2 , function(x) all(is.na(x) | (x == 0)))
-
 # Remove column if entire OTU column contain zeros or missing values
-my_otu_mod_noz <- as.data.frame(my_otu_mod_noz[,!apply(my_otu_mod_noz , 2 , function(x) all(is.na(x) | (x == 0)))])
-
-# Add column names to the dataset
-colnames(my_otu_mod_noz) <- names(namesHeader[-which(namesHeader==TRUE)])
-
+my_otu_mod_noz <- my_otu_mod_noz[,!apply(my_otu_mod_noz , 2 , function(x) all(is.na(x) | (x == 0))), drop = FALSE]
+                                                       
 # Transform data by removing any OTU with median relative abundance below cutoff
 t_otu_mod_noz = as.data.frame(t(my_otu_mod_noz))
 
