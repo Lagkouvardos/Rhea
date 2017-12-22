@@ -89,6 +89,8 @@ otus_div_stats$Shannon<-apply(my_otu_table,1,Shannon.entropy)
 otus_div_stats$Shannon.effective<-apply(my_otu_table,1,Shannon.effective)
 otus_div_stats$Simpson<-apply(my_otu_table,1,Simpson.concentration)
 otus_div_stats$Simpson.effective<-apply(my_otu_table,1,Simpson.effective)
+otus_div_stats$Evenness <- otus_div_stats$Shannon/log(otus_div_stats$Richness,2)
+
 
 # Write the results in a file and copy in directory "Serial-Group-Comparisons" if existing
 write.table(otus_div_stats, "alpha-diversity.tab", sep="\t", col.names=NA, quote=FALSE)

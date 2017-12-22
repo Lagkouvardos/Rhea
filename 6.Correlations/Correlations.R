@@ -357,6 +357,9 @@ my_pairs_cutoff_corr <- my_pairs_cutoff[abs(as.numeric(my_pairs_cutoff[, 3])) >=
 
 # Remove columns containing no information
 my_cor_matrix <- my_cor_matrix[, colSums(is.na(my_cor_matrix)) != nrow(my_cor_matrix)]
+
+# Missing values in the correlation matrix are set to zero
+my_cor_matrix[is.na(my_cor_matrix)] <- 0
 #################################################################################
 ######                        Generate Graphs                              ######
 #################################################################################

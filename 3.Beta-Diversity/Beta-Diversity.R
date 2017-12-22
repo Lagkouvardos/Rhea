@@ -14,12 +14,13 @@
 #' 
 #'
 #' Output: 
-#' The script generates three graphical outputs (pdf) and one text file
+#' The script generates three graphical outputs (pdf), one text file and a newick tree
 #' 1. A phylogram with colour-coded group clustering
 #' 2. MDS and NMDS plots showing information about beta-diversity across all sample groups
 #' 3. MDS and NMDS plots of all pairwise comparisons
 #' 4. The distance matrix
 #' 5. Plot showing the optimal number of clusters  
+#' 6. Dendogram for all samples in a newick tree file
 #'
 #' Concept:
 #' A distance matrix is calculated based on the generalized UniFrac approach
@@ -334,6 +335,7 @@ dev.off()
 file_name <- paste(group_name,"distance-matrix-gunif.tab",sep="_")
 write.table( unifract_dist_comp, paste(group_name,"/",file_name,sep=""), sep = "\t", col.names = NA, quote = FALSE)
 write.table( unifract_dist_comp, "distance-matrix-gunif.tab", sep = "\t", col.names = NA, quote = FALSE)
+write.tree(tree,"samples-Tree.nwk",tree.names = FALSE)
 
 # Graphical output files are generated in the main part of the script
 if(!flag) { stop("
