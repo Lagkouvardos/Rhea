@@ -10,11 +10,13 @@
 #' 1. Set the path to the directory where the file is stored
 #' 2. Write the name of the OTU-table of interest in quotes
 #' 
-#' Output: The script generates four tab-delimited files
-#' 1. Normalized counts without taxonomy information
-#' 2. Normalized counts with taxonomy information
-#' 3. Normalized relative abundances without taxonomy information
-#' 4. Normalized relative abundances with taxonomy information
+#' The script generates five tab-delimited files and one pdf file
+#' 1. Normalized counts with taxonomy information
+#' 2. Normalized counts without taxonomy information
+#' 3. Normalized relative abundances with taxonomy information
+#' 4. Normalized relative abundances without taxonomy information
+#' 5. two sided pdf file with a Rarefaction curve for all samples and the most undersampled cases (default 5 cases)
+#' 6. Slope of the Rarefaction curve 
 #' 
 #' Concept:
 #' The default method followed is normalization via division by the sum of sequences in a given sample
@@ -22,6 +24,11 @@
 #' It is used instead of the classic rarefactioning approach
 #' to avoid unnecessary variation due to the random subsampling and loss of information due to rounding.
 #' The option of classic rarefaction is still available if deemed necessary by users
+#' Rarefaction curves are showing species richness with respect to sequencing depth (number of reads). 
+#' Undersampled cases are the one not reaching a staty plateau at the maximum number of reads and thus do not 
+#' cover most of the species by reaching a sufficient number of reads.
+#' The slope to detemrine undersampled cases is shown in the tab delimted file taking into account the number of species reached with
+#' the maximum number of reads and the species richness 100 before last
 #' 
 #' Note:
 #' Files are stored in the current folder 
@@ -45,6 +52,11 @@ file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
 #' 1 = Random subsampling with rounding
 method <- 0                                   #<--- CHANGE ACCORDINGLY
 
+
+#' Please choose a number of plotted underestimated cases in a rarefaction cure
+#' By default the number of underestimated cases ist 5
+labelCutoff <- 5
+
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
@@ -54,7 +66,7 @@ method <- 0                                   #<--- CHANGE ACCORDINGLY
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("GUniFrac") 
+packages <-c("GUniFrac","vegan") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -119,6 +131,54 @@ norm_otu_table_tax <- cbind(norm_otu_table,taxonomy)
 # Reinsert the taxonomy information in relative abundance table
 rel_otu_table_tax <- cbind(rel_otu_table,taxonomy)
 
+################################################################################
+# Generate a twosided pdf with a rarefaction curve for all samples and a curve 
+pdf(file = "RarefactionCurve.pdf")
+
+# Plot the rarefaction curve for all samples
+rarefactionCurve <- rarecurve(data.frame(t(otu_table)), step = 20, col = "black",lty = "solid",label=F)
+
+# Generate empy vectors for the analysis of the rarefaction curve
+slope=vector()
+SampleID=vector()
+
+# Iterate through all samples
+for(i in seq_along(rarefactionCurve)) {
+  # If the sequencing depth is greater 100 the difference between the last and last-100 richness is calcualted 
+  richness <- ifelse(length(rarefactionCurve[[i]])>=100,rarefactionCurve[[i]][length(rarefactionCurve[[i]])] - rarefactionCurve[[i]][length(rarefactionCurve[[i]])-100],1000)
+  slope<- c(slope,richness)
+  SampleID <- c(SampleID,as.character(names(otu_table)[i]))
+}
+
+# Generate the output table for rarefaction curve
+curvedf <- cbind(SampleID,slope)
+order <- order(curvedf[,2],decreasing = TRUE)
+# Order the table
+curvedf <- curvedf[order(curvedf[,2],decreasing = TRUE),]
+
+# Generates a graph with all samples 
+# Underestimated cases are shown in red 
+for ( i in 1:labelCutoff) {
+  N <- attr(rarefactionCurve[[order[i]]], "Subsample")
+  lines(N, rarefactionCurve[[order[i]]],col="red")
+}
+
+# Determine the plotting width and height
+Nmax <- sapply(rarefactionCurve, function(x) max(attr(x, "Subsample")))
+Smax <- sapply(rarefactionCurve, max)
+
+# Creates an empty plot for rarefaction curves of underestimated cases
+plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = "Sample Size",
+     ylab = "Species", type = "n", main=paste(labelCutoff,"- most undersampled cases"))
+
+for (i in 1:labelCutoff) {
+  N <- attr(rarefactionCurve[[order[i]]], "Subsample")
+  lines(N, rarefactionCurve[[order[i]]],col="red")
+  text(max(attr(rarefactionCurve[[order[i]]],"Subsample")),max(rarefactionCurve[[order[i]]]), curvedf[i,1],cex=0.6)
+}
+
+dev.off()
+
 #################################################################################
 ######                        Write Output Files                           ######
 #################################################################################
@@ -138,6 +198,10 @@ suppressWarnings (try(write.table(rel_otu_table, "../5.Serial-Group-Comparisons/
 # Write the normalized relative abundance with taxonomy table in a file and copy in directory Taxonomic-Binning if existing
 write.table(rel_otu_table_tax, "OTUs_Table-norm-rel-tax.tab", sep ="\t",col.names = NA, quote = FALSE)
 suppressWarnings (try(write.table(rel_otu_table_tax, "../4.Taxonomic-Binning/OTUs_Table-norm-rel-tax.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+
+# Write the rarefaction table
+write.table(curvedf, "RarefactionCurve.tab", sep ="\t", quote = FALSE, row.names = FALSE)
+
 
 # Error message 
 if(!flag) { stop("
