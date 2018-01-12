@@ -482,7 +482,7 @@ dev.off()
 OriginalPath <- getwd()
 
 # Take the name of the inputfile to name the folder
-prefix = paste(strsplit(input_filename,"[.]")[[1]][1],sep="_")
+prefix = paste(strsplit(input_file,"[.]")[[1]][1],sep="_")
 
 # Make a directory name with inputfile name and date
 newdir <- paste(prefix,Sys.Date(), sep = "_")
