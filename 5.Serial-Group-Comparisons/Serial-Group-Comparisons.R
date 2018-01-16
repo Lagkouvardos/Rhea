@@ -475,7 +475,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
        pretrowbind <-rbind(pret[idx_name[1,i],-3],pret[idx_name[2,i],-3])
        
        # Compute two-sided Fisher's test
-       fppval_res[i] <- fisher.test(pretrowbind,alternative = "two.sided")$p.value
+       fppval_res[i] <- fisher.test(pretrowbind,alternative = "two.sided",workspace=2e8)$p.value
        
        # Set values of the pair and corresponding p-value
        # Take variable name as "A-B"
