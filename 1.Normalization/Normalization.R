@@ -17,7 +17,7 @@
 #' 3. Normalized relative abundances with taxonomy information
 #' 4. Normalized relative abundances without taxonomy information
 #' 5. Rarefaction curves for all samples and the most undersampled ones (default 5 cases) as PDF
-#' 6. Slope of the Rarefaction curve 
+#' 6. Slope of the Rarefaction curve as species per 100 reads
 #' 
 #' Concept:
 #' The default method followed is normalization via division by the sum of sequences in a given sample
@@ -27,14 +27,16 @@
 #' Rarefaction curves are showing species richness with respect to sequencing depth (number of reads). 
 #' Undersequenced samples are those that their rarefaction curve is not reaching plateau at the available number of reads.
 #' This indicates that additional less abundant species are probably in the sample 
-#' but where not covered by the available depth of sequencing.
+#' but were not covered by the available depth of sequencing.
 #' The terminal slope of the curve for each sample is documented in the tab delimited file
 #' as the number of species added in richness by the last 100 reads
- 
+
 #' Note:
 #' Files are stored in the current folder 
 #' If a file is needed for downstream analysis, it is also automatically added to the appropriate folder
 #' under the condition that original folder structure of Rhea is maintained.
+#' If the evaluation of suficiency of sequencing depth led to the removal of samples from the analysis
+#' the normalization script should be re-run with the new OTU table.
 
 ##################################################################################
 ######             Set parameters in this section manually                  ######
@@ -42,7 +44,7 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/normalize/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
+setwd("D:/tra/tsiamis-Rhea-Error/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the original OTU-table with taxonomic classification 
 file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
@@ -53,8 +55,8 @@ file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
 method <- 0                                   #<--- CHANGE ACCORDINGLY
 
 
-#' Please choose the number of samles with the stipest rarefraction curves to be plotted
-#' By default the number of underestimated cases is 5
+#' Please choose the number of samples with the stipest rarefaction curves to be selectively plotted
+#' The default number of samples presented seperately is 5
 labelCutoff <- 5                              #<--- CHANGE ACCORDINGLY
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
@@ -113,8 +115,8 @@ otu_table$taxonomy <- NULL
 min_sum <- min(colSums(otu_table))
 
 if (method == 0) {
-# Divide each value by the sum of the sample and multiply by the minimal sample sum
-norm_otu_table <- t(min_sum * t(otu_table) / colSums(otu_table))
+  # Divide each value by the sum of the sample and multiply by the minimal sample sum
+  norm_otu_table <- t(min_sum * t(otu_table) / colSums(otu_table))
 } else {
   # Rarefy the OTU table to an equal sequencing depth
   norm_otu_table <- Rarefy(t(otu_table),depth = min_sum)
@@ -136,7 +138,14 @@ rel_otu_table_tax <- cbind(rel_otu_table,taxonomy)
 pdf(file = "RarefactionCurve.pdf")
 
 # Plot the rarefaction curve for all samples
-rarefactionCurve <- rarecurve(data.frame(t(otu_table)), step = 20, col = "black",lty = "solid",label=F)
+rarefactionCurve <- rarecurve(data.frame(t(otu_table)), 
+                              step = 20,
+                              col = "black",
+                              lty = "solid",
+                              label=F,
+                              xlab = "Number of Reads",
+                              ylab = "Number of Species",
+                              main = "Rarefaction Curves of All Samples")
 
 # Generate empy vectors for the analysis of the rarefaction curve
 slope=vector()
@@ -168,8 +177,8 @@ Nmax <- sapply(rarefactionCurve, function(x) max(attr(x, "Subsample")))
 Smax <- sapply(rarefactionCurve, max)
 
 # Creates an empty plot for rarefaction curves of underestimated cases
-plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = "Sample Size",
-     ylab = "Species", type = "n", main=paste(labelCutoff,"- most undersampled cases"))
+plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = "Number of Reads",
+     ylab = "Number of Species", type = "n", main=paste(labelCutoff,"- most undersampled cases"))
 
 for (i in 1:labelCutoff) {
   N <- attr(rarefactionCurve[[order[i]]], "Subsample")
