@@ -1,10 +1,11 @@
-#' Version 1.6
-#' This script was last modified on 11/02/2016
+#' Version 2.0
+#' This script was last modified on 19/01/2018
 #' Script Task: Normalize OTU-tables
 #' Author: Ilias Lagkouvardos
 #'
 #' Normalize abundance values of the input OTU table
 #' Calculate relative abundances for all OTUs based on normalized values
+#' Calculate rarefaction curves to help estimate sufficiency of sequencing depth for each sample
 #' 
 #' Input: Please enter following parameters
 #' 1. Set the path to the directory where the file is stored
@@ -15,26 +16,25 @@
 #' 2. Normalized counts without taxonomy information
 #' 3. Normalized relative abundances with taxonomy information
 #' 4. Normalized relative abundances without taxonomy information
-#' 5. two sided pdf file with a Rarefaction curve for all samples and the most undersampled cases (default 5 cases)
+#' 5. Rarefaction curves for all samples and the most undersampled ones (default 5 cases) as PDF
 #' 6. Slope of the Rarefaction curve 
 #' 
 #' Concept:
 #' The default method followed is normalization via division by the sum of sequences in a given sample
-#' and mulitplication by the minimum sum across all samples.
-#' It is used instead of the classic rarefactioning approach
+#' and multiplication by the minimum sum across all samples. It is used instead of the classic rarefactioning approach
 #' to avoid unnecessary variation due to the random subsampling and loss of information due to rounding.
-#' The option of classic rarefaction is still available if deemed necessary by users
+#' The option of random subsampling is still available for normalization if deemed necessary by users.
 #' Rarefaction curves are showing species richness with respect to sequencing depth (number of reads). 
-#' Undersampled cases are the one not reaching a staty plateau at the maximum number of reads and thus do not 
-#' cover most of the species by reaching a sufficient number of reads.
-#' The slope to detemrine undersampled cases is shown in the tab delimted file taking into account the number of species reached with
-#' the maximum number of reads and the species richness 100 before last
-#' 
+#' Undersequenced samples are those that their rarefaction curve is not reaching plateau at the available number of reads.
+#' This indicates that additional less abundant species are probably in the sample 
+#' but where not covered by the available depth of sequencing.
+#' The terminal slope of the curve for each sample is documented in the tab delimited file
+#' as the number of species added in richness by the last 100 reads
+ 
 #' Note:
 #' Files are stored in the current folder 
 #' If a file is needed for downstream analysis, it is also automatically added to the appropriate folder
 #' under the condition that original folder structure of Rhea is maintained.
-
 
 ##################################################################################
 ######             Set parameters in this section manually                  ######
@@ -53,9 +53,9 @@ file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
 method <- 0                                   #<--- CHANGE ACCORDINGLY
 
 
-#' Please choose a number of plotted underestimated cases in a rarefaction cure
-#' By default the number of underestimated cases ist 5
-labelCutoff <- 5
+#' Please choose the number of samles with the stipest rarefraction curves to be plotted
+#' By default the number of underestimated cases is 5
+labelCutoff <- 5                              #<--- CHANGE ACCORDINGLY
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
