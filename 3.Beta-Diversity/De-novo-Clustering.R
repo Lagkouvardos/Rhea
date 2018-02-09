@@ -100,7 +100,6 @@ data_cluster <- as.vector(pam(as.dist(unifract_dist), cluster_number, diss=TRUE)
 
 # Add column to mapping file with information about cluster group
 meta_file <- cbind(data_cluster,meta_file)
-colnames(meta_file)[dim(meta_file)[2]] <- "cluster"
 
 # Calculate the NMDS plot (Non-metric Multidimensional Scaling plot)
 meta <- metaMDS(unifract_dist,k = 2)
