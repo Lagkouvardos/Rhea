@@ -189,7 +189,7 @@ all_groups_comp<-factor(all_groups_comp,levels(all_groups_comp)[unique(all_group
 # Calculate and display the MDS plot (Multidimensional Scaling plot)
 s.class(
   cmdscale(unifract_dist_comp, k = 2), col = unique(plot_color), cpoint =
-    2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
+    2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\n(p-value ",adonis[[1]][6][[1]][1],")",sep="")
 )
 if (label_samples==1) {
   lab_samples <- row.names(cmdscale(unifract_dist_comp, k = 2))
@@ -201,7 +201,7 @@ if (label_samples==1) {
 meta <- metaMDS(unifract_dist_comp,k = 2)
 s.class(
   meta$points, col = unique(plot_color), cpoint = 2, fac = all_groups_comp,
-  sub = paste("metaNMDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
+  sub = paste("metaNMDS plot of Microbial Profiles\n(p-value ",adonis[[1]][6][[1]][1],")",sep="")
 )
 if (label_samples==1){
   lab_samples <- row.names(meta$points)
