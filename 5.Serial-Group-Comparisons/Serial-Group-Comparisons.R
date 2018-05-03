@@ -592,7 +592,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
         if (!is.na(signif_fpairs[1,1])) {
          signif_fpairs$measure <- as.character(signif_fpairs$measure)
          signif_fpairs$name <- as.character(signif_fpairs$name)
-         colnames(signif_fpairs) <-c("Species","Groups","P-value","Adj. p-value")
+         colnames(signif_fpairs) <-c("Species","Groups","p-value","Adj. p-value")
          fpvaltable[[x]] <- list()
          
          # Pavlue table for significant pairs
@@ -605,7 +605,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
          FnewRow$name <- as.character(FnewRow$name)
          FnewRow$pvalue <- as.character(FnewRow$pvalue)
          FnewRow <- cbind(FnewRow$name,"-",FnewRow$pvalue,0)
-         colnames(FnewRow) <-c("Species","Groups","P-value","Adj. p-value")
+         colnames(FnewRow) <-c("Species","Groups","p-value","Adj. p-value")
          allfpvaltable[[x]] <- list()
          allfpvaltable[[x]] <- tableGrob(FnewRow,rows = NULL,theme = mytheme)
          #fpvaltable[[x]] <- NULL
@@ -615,7 +615,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
        if (!is.na(signif_pairs[1,1])) {
          signif_pairs$measure <- as.character(signif_pairs$measure)
          signif_pairs$name <- as.character(signif_pairs$name)
-         colnames(signif_pairs) <-c("Species","Groups","P-value","Adj. p-value")
+         colnames(signif_pairs) <-c("Species","Groups","p-value","Adj. p-value")
          pvaltable[[x]] <- list()
          pvaltableAll[[x]] <- list()
          
@@ -630,7 +630,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
            padding <- unit(2,"mm")
            pvaltable[[x]] <- gtable_add_rows(pvaltable[[x]], heights = grobHeight(title) + padding,pos = 0)
            pvaltable[[x]] <- gtable_add_grob(pvaltable[[x]], title, 1, 1, 1, ncol(pvaltable[[x]]))
-         colnames(signif_all) <-c(" ","P-value","Adj. p-value")
+         colnames(signif_all) <-c(" ","p-value","Adj. p-value")
          pvaltableAll[[x]] <- tableGrob(signif_all,rows = NULL,theme = mytheme)
          title <- textGrob("Kruskal-Wallis Rank Sum Test - all groups ",gp = gpar(fontsize = 9))
          padding <- unit(2,"mm")
@@ -666,7 +666,7 @@ if(length(allfpvaltable)!=length(fpvaltable)) {
 if (length(fpvaltable)!=0){
 for (i in 1:length(fpvaltable)){
   if (!is.null(fpvaltable[[i]]) || !is.null(allfpvaltable[[i]])){
-    colnames(sig_Fdf) <-c(" ","P-value","Adj.p-value")
+    colnames(sig_Fdf) <-c(" ","p-value","Adj. p-value")
     allfpvaltable[[i]] <- list()
     title_all <- textGrob("Fisher's Exact Test - all groups",gp = gpar(fontsize = 9))
     padding <- unit(3,"mm")
