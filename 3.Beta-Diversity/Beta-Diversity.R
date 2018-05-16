@@ -283,7 +283,7 @@ for (i in 1:length(combn(unique_groups,2)[1,])) {
 # Adjust p-values for multiple testing according to Benjamini-Hochberg method
 pVal_BH <- p.adjust(pVal,method="BH", n=length(pVal))
 
-# Generated NMDS plots are stored in one pdf file called "pairwise-beta-diversity.pdf"
+# Generated NMDS plots are stored in one pdf file called "pairwise-beta-diversity-nMDS.pdf"
 file_name <- paste(group_name,"pairwise-beta-diversity.pdf",sep="_")
 pdf(paste(group_name,"/",file_name,sep=""))
 
@@ -299,6 +299,20 @@ for(i in 1:length(combn(unique_groups,2)[1,])){
 }
 dev.off()
 
+# Generated MDS plots are stored in one pdf file called "pairwise-beta-diversity-MDS.pdf"
+file_name <- paste(group_name,"pairwise-beta-diversity-MDS.pdf",sep="_")
+pdf(paste(group_name,"/",file_name,sep=""))
+
+for(i in 1:length(combn(unique_groups,2)[1,])){
+  # Calculate and display the MDS plot (Multidimensional Scaling plot)
+  s.class(
+    cmdscale(pairedMatrixList[[i]], k = 2), col = rainbow(length(levels(all_groups_comp))), cpoint =
+      2, fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
+                                           all_groups_comp == pair_2_list[i]]), sub = paste("MDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n(p-value ",pVal[i],","," corr. p-value ", pVal_BH[i],")",sep="")
+  )
+}
+dev.off()                                     
+                                     
 }
 
 ######                        Determine number of clusters                           ######
