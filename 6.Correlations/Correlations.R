@@ -347,7 +347,7 @@ matrix_names <- list(c(rep("",times=dim(my_pairs)[1])),
 dimnames(my_pairs) <- matrix_names
 
 # Create subset of pairs with significant p-values
-my_pairs_cutoff <- my_pairs[my_pairs[, 4] <= signf_cutoff, ]
+my_pairs_cutoff <- my_pairs[as.numeric(my_pairs[, 4]) <= signf_cutoff, ]
 
 # Convert to matrix
 my_pairs_cutoff <- matrix(my_pairs_cutoff,ncol=6,dimnames = list(c(rep("",times=dim(my_pairs_cutoff)[1])),c("variable1","variable2","correlation","pvalue","support","corrected pvalue")))
@@ -363,6 +363,21 @@ my_cor_matrix[is.na(my_cor_matrix)] <- 0
 #################################################################################
 ######                        Generate Graphs                              ######
 #################################################################################
+# Take current path in one variable to store results in seperate folders in further steps
+OriginalPath <- getwd()
+
+# Take the name of the inputfile to name the folder
+prefix = paste(strsplit(input_file,"[.]")[[1]][1],sep="_")
+
+# Make a directory name with inputfile name and date
+newdir <- paste(prefix,Sys.Date(), sep = "_")
+
+# Create a directory 
+dir.create(newdir)
+
+# Set path for all outputs to the new directory
+setwd(newdir)
+                    
 # Save visualized correlation matrix in "corrplot.pdf"
 pdf(file = "corrplot.pdf")
 
