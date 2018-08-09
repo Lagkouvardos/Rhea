@@ -396,7 +396,7 @@ dev.off()
 # Check if significance value for graphical output was modified by the user
 if (plot_pval_cutoff != signf_cutoff | plot_corr_cutoff != 0.5) {
   # Generate a new matrix with the signficance cutoff 
-  my_pairs_cutoff <- my_pairs[my_pairs[, 4] <= plot_pval_cutoff, ]
+  my_pairs_cutoff <- my_pairs[as.numeric(my_pairs[, 4]) <= plot_pval_cutoff, ]
   
   # Extract all significant pairs with the set correlation cutoff
   corr_pval_cutoff <- my_pairs_cutoff[abs(as.numeric(my_pairs_cutoff[, 3])) >= plot_corr_cutoff, ]
