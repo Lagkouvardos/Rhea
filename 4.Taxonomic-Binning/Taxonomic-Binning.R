@@ -65,7 +65,7 @@ otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
 taxonomy <- otu_table[,dim(otu_table)[2]]
 
 # Test if the taxonomy column is in the correct format (delimited by semicolon)
-if(any(grepl("(?:[^;]*;){6}", taxonomy))==FALSE) {
+if(all(grepl("(?:[^;]*;){6}", taxonomy))==FALSE) {
 
 #Send error message if taxonomy is not in the right format
   stop("Wrong number of taxonomic classes\n
