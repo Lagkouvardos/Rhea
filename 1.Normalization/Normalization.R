@@ -2,7 +2,7 @@
 #' This script was last modified on 20/01/2020
 #' Script Task: Normalize OTU-tables
 #' Author: Ilias Lagkouvardos
-#' Contributions by: Thomas Clavel
+#' Contributions by: Thomas Clavel, Sandra Reitmeier
 #'
 #' Normalize abundance values of the input OTU table
 #' Calculate relative abundances for all OTUs based on normalized values
