@@ -1,7 +1,8 @@
 #' Version 2.0
-#' This script was last modified on 19/01/2018
+#' This script was last modified on 20/01/2020
 #' Script Task: Normalize OTU-tables
 #' Author: Ilias Lagkouvardos
+#' Contributions by: Thomas Clavel
 #'
 #' Normalize abundance values of the input OTU table
 #' Calculate relative abundances for all OTUs based on normalized values
@@ -17,25 +18,25 @@
 #' 3. Normalized relative abundances with taxonomy information
 #' 4. Normalized relative abundances without taxonomy information
 #' 5. Rarefaction curves for all samples and the most undersampled ones (default 5 cases) as PDF
-#' 6. Slope of the Rarefaction curve as species per 100 reads
+#' 6. Slope of the Rarefaction curve expressed as the number of species per 100 reads
 #' 
 #' Concept:
 #' The default method followed is normalization via division by the sum of sequences in a given sample
-#' and multiplication by the minimum sum across all samples. It is used instead of the classic rarefactioning approach
+#' and multiplication by the minimum sum across all samples. It is used instead of the classic rarefaction approach
 #' to avoid unnecessary variation due to the random subsampling and loss of information due to rounding.
-#' The option of random subsampling is still available for normalization if deemed necessary by users.
+#' The option of random subsampling is still available for normalization if deemed necessary by users (see Set parameters section below).
 #' Rarefaction curves are showing species richness with respect to sequencing depth (number of reads). 
-#' Undersequenced samples are those that their rarefaction curve is not reaching plateau at the available number of reads.
-#' This indicates that additional less abundant species are probably in the sample 
-#' but were not covered by the available depth of sequencing.
-#' The terminal slope of the curve for each sample is documented in the tab delimited file
+#' The depth of sequencing may be considered too low for those samples with a rarefaction curve that does not reach a plateau at the available maximum number of reads.
+#' This indicates that additional, less abundant species are probably in the sample 
+#' but were not detected at the available depth of sequencing.
+#' The terminal slope of the curve for each sample is documented in the tab-delimited file
 #' as the number of species added in richness by the last 100 reads
 
 #' Note:
 #' Files are stored in the current folder 
-#' If a file is needed for downstream analysis, it is also automatically added to the appropriate folder
-#' under the condition that original folder structure of Rhea is maintained.
-#' If the evaluation of suficiency of sequencing depth led to the removal of samples from the analysis
+#' If a file is needed for downstream analysis, it is also automatically added to the appropriate next folder
+#' under the condition that the original folder structure of Rhea is maintained.
+#' If the primary evaluation of sufficient sequencing depth led to subsequent removal of samples from the analysis,
 #' the normalization script should be re-run with the new OTU table.
 
 ##################################################################################
@@ -44,7 +45,7 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/normalize/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
+setwd("C:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the original OTU-table with taxonomic classification 
 file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
@@ -54,9 +55,16 @@ file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
 #' 1 = Random subsampling with rounding
 method <- 0                                   #<--- CHANGE ACCORDINGLY
 
+#' Pease select the normalization level used
+#' 0 = Minimum sampling size
+#' 1 = Fixed value (e.g. 1000)
+level <- 0                                    #<--- CHANGE ACCORDINGLY
 
-#' Please choose the number of samples with the stipest rarefaction curves to be selectively plotted
-#' The default number of samples presented seperately is 5
+#' Please choose the value at which all samples will be normalized. (Only used if level selected is 1)
+normCutoff <- 1000
+
+#' Please choose the number of samples with the steepest rarefaction curves to be selectively plotted
+#' The default number of samples presented separately is 5
 labelCutoff <- 5                              #<--- CHANGE ACCORDINGLY
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
@@ -111,8 +119,16 @@ taxonomy <- as.vector(otu_table$taxonomy)
 # Delete column with taxonomy information in dataframe
 otu_table$taxonomy <- NULL
 
-# Calculate the minimum sum of all columns/samples
-min_sum <- min(colSums(otu_table))
+
+
+if (level == 0) {
+  # Calculate the minimum sum of all columns/samples
+  min_sum <- min(colSums(otu_table))
+} else {
+  # The minimum size is set to a fixed reference level
+  min_sum <- normCutoff
+}
+
 
 if (method == 0) {
   # Divide each value by the sum of the sample and multiply by the minimal sample sum
@@ -127,14 +143,16 @@ if (method == 0) {
 # Divide each value by the sum of the sample and multiply by 100
 rel_otu_table <- t(100 * t(otu_table) / colSums(otu_table))
 
+
+
 # Re-insert the taxonomy information in normalized counts table
 norm_otu_table_tax <- cbind(norm_otu_table,taxonomy)
 
-# Reinsert the taxonomy information in relative abundance table
+# Re-insert the taxonomy information in relative abundance table
 rel_otu_table_tax <- cbind(rel_otu_table,taxonomy)
 
 ################################################################################
-# Generate a twosided pdf with a rarefaction curve for all samples and a curve 
+# Generate a two-sided pdf with a rarefaction curve for all samples and a curve 
 pdf(file = "RarefactionCurve.pdf")
 
 # Plot the rarefaction curve for all samples
@@ -147,13 +165,13 @@ rarefactionCurve <- rarecurve(data.frame(t(otu_table)),
                               ylab = "Number of Species",
                               main = "Rarefaction Curves of All Samples")
 
-# Generate empy vectors for the analysis of the rarefaction curve
+# Generate empty vectors for the analysis of the rarefaction curve
 slope=vector()
 SampleID=vector()
 
 # Iterate through all samples
 for(i in seq_along(rarefactionCurve)) {
-  # If the sequencing depth is greater 100 the difference between the last and last-100 richness is calcualted 
+  # If the sequencing depth is greater than 100, the difference between the last and last-100 richness is calculated 
   richness <- ifelse(length(rarefactionCurve[[i]])>=100,rarefactionCurve[[i]][length(rarefactionCurve[[i]])] - rarefactionCurve[[i]][length(rarefactionCurve[[i]])-100],1000)
   slope<- c(slope,richness)
   SampleID <- c(SampleID,as.character(names(otu_table)[i]))
