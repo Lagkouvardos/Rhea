@@ -2,8 +2,7 @@
 #' Last modified on 20/01/2020
 #' Script Task: Calculate alpha-diversity
 #' Author: Ilias Lagkouvardos
-#' Contributions by: Thomas Clavel 
-
+#' Contributions by: Thomas Clavel, Sandra Reitmeier
 #'
 #' For meaningful comparisons of species richness across samples, 
 #' use of normalized sequence counts is expected.
