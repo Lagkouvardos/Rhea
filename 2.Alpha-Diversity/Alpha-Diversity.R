@@ -8,7 +8,9 @@
 #' use of normalized sequence counts is expected.
 #' For normalized richness calculation, only OTUs that are above 0.5 normalized counts are considered.
 #' For comparisons across studies the notions of "Normalized" and "Effective" richness are being used.
-#' Effective Richness is the number of OTUs occurring at a relative abundance of 0.25% in a given sample, a threshold that we experimentally determined using Mock communities in vitro and in vivo and is efficient in removing spurious taxa from amplicon sequencing data.
+#' Effective Richness is the number of OTUs occurring above the relative abundance of 0.25% in a given sample.
+#' This threshold was experimentally determined using Mock communities in vitro and in vivo and 
+#' is efficient in removing spurious taxa from amplicon sequencing data.
 #' Normalized Richness is the number of OTUs above 0.5 counts in a sample when normalized to a fixed depth (1000)
 #' 
 #' Note:
