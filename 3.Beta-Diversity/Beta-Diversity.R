@@ -66,7 +66,7 @@ label_id =c("")
 
 #' De-Novo Clustering will be perfomed for the number of samples or maximal for the set limit
 #' Default Limit is 100
-kmers_limit=100
+kmers_limit=20
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
@@ -108,11 +108,8 @@ otu_file <- otu_file[!apply(is.na(otu_file) | otu_file =="",1,all),]
 # Load the mapping file containing individual sample information (sample names in the first column)
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
-# Save the column names of the mapping file
-mappingVar <- names(meta_file)
-
 # Clean table from empty lines
-meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),],row.names=row.names(meta_file))
+meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),])
 
 # Load the phylogenetic tree calculated from the OTU sequences 
 tree_file <- read.tree(input_tree)
@@ -130,10 +127,7 @@ otu_file <- otu_file[,order(names(otu_file))]
 otu_file <- data.frame(t(otu_file))
 
 # Order the mapping file by sample names (ascending)
-meta_file <- data.frame(meta_file[order(row.names(meta_file)),],row.names=row.names(meta_file))
-
-# Assign the column names to the modified mapping file
-names(meta_file) <- mappingVar
+meta_file <- data.frame(meta_file[order(row.names(meta_file)),])
 
 # Save the position of the target group name in the mapping file
 meta_file_pos <- which(colnames(meta_file) == group_name)
@@ -284,7 +278,7 @@ for (i in 1:length(combn(unique_groups,2)[1,])) {
 pVal_BH <- p.adjust(pVal,method="BH", n=length(pVal))
 
 # Generated NMDS plots are stored in one pdf file called "pairwise-beta-diversity-nMDS.pdf"
-file_name <- paste(group_name,"pairwise-beta-diversity.pdf",sep="_")
+file_name <- paste(group_name,"pairwise-beta-diversity-NMDS.pdf",sep="_")
 pdf(paste(group_name,"/",file_name,sep=""))
 
 for(i in 1:length(combn(unique_groups,2)[1,])){
