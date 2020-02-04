@@ -156,7 +156,7 @@ unifract_dist <- unifracs[, , "d_0.5"]
 all_dist_matrix <- as.dist(unifract_dist)
 
 # Apply a hierarchical cluster analysis on the distance matrix based on the Ward's method
-all_fit <- hclust(all_dist_matrix, method = "ward")
+all_fit <- hclust(all_dist_matrix, method = "ward.D2")
 
 # Generates a tree from the hierarchically generated object
 tree <- as.phylo(all_fit)
