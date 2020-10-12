@@ -311,19 +311,24 @@ dev.off()
 
 ######                        Determine number of clusters                           ######
 
-nclusters=NULL
+ch_nclusters=NULL
+sil_nclusters=NULL
+
 if (dim(otu_file)[1]-1 <= kmers_limit) {
   kmers_limit=dim(otu_file)[1]-1
 }
 for (k in 1:kmers_limit) { 
   if (k==1) {
-    nclusters[k]=NA 
+    ch_nclusters[k]=NA 
+    sil_nclusters[k]=NA
   } else {
     # Partitioning the data into k clusters (max k is number of samples within the dataset)
     data_cluster=as.vector(pam(as.dist(unifract_dist_comp), k, diss=TRUE)$clustering)
     
-    # Calculate Calinski-Harabasz Index 
-    nclusters[k]=calinhara(otu_file,data_cluster,k)
+    # Calculate Calinski-Harabasz and silhouette Index 
+    index=cluster.stats(as.dist(unifract_dist_comp),data_cluster)
+    ch_nclusters[k] <- index[["ch"]]
+    sil_nclusters[k] <- index[["avg.silwidth"]]
     print(k)
   }
 }
@@ -331,7 +336,8 @@ for (k in 1:kmers_limit) {
 # Generated plot showing the optimal number of clusters
 pdf("de-novo-clustering.pdf")
 
-plot(nclusters, type="h", xlab="k clusters", ylab="CH index",main="Optimal number of clusters")
+plot(ch_nclusters, type="h", xlab="k clusters", ylab="CH index",main="Optimal number of clusters")
+plot(sil_nclusters, type="h", xlab="k clusters", ylab="Average silhouette width",main="Optimal number of clusters")
 
 dev.off()
 
