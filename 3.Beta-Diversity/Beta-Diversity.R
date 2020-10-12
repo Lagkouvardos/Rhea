@@ -28,7 +28,7 @@
 #' Samples are clustered based on the distance matrix using the Ward's hierarchical clustering method
 #' To determine similarities between samples, a multivariate analysis is applied
 #' and sample distribution is illustrated by means of MDS and NMDS (non-metric) plots
-#' The Calinski-Harabasz (CH) Index is used to assess the optimal number of clusters the dataset was most robustly partitioned into  
+#' The Calinski-Harabasz (CH) and Silhouette Index are used to assess the optimal number of clusters the dataset was most robustly partitioned into  
 
 ##################################################################################
 ######             Set parameters in this section manually                  ######
