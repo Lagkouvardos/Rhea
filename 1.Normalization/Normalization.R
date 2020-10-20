@@ -7,11 +7,11 @@
 #' Normalize abundance values of the input OTU table
 #' Calculate relative abundances for all OTUs based on normalized values
 #' Calculate rarefaction curves to help estimate sufficiency of sequencing depth for each sample
-#' 
+#'
 #' Input: Please enter following parameters
 #' 1. Set the path to the directory where the file is stored
 #' 2. Write the name of the OTU-table of interest in quotes
-#' 
+#'
 #' The script generates five tab-delimited files and one pdf file
 #' 1. Normalized counts with taxonomy information
 #' 2. Normalized counts without taxonomy information
@@ -19,21 +19,21 @@
 #' 4. Normalized relative abundances without taxonomy information
 #' 5. Rarefaction curves for all samples and the most undersampled ones (default 5 cases) as PDF
 #' 6. Slope of the Rarefaction curve expressed as the number of species per 100 reads
-#' 
+#'
 #' Concept:
 #' The default method followed is normalization via division by the sum of sequences in a given sample
 #' and multiplication by the minimum sum across all samples. It is used instead of the classic rarefaction approach
 #' to avoid unnecessary variation due to the random subsampling and loss of information due to rounding.
 #' The option of random subsampling is still available for normalization if deemed necessary by users (see Set parameters section below).
-#' Rarefaction curves are showing species richness with respect to sequencing depth (number of reads). 
+#' Rarefaction curves are showing species richness with respect to sequencing depth (number of reads).
 #' The depth of sequencing may be considered too low for those samples with a rarefaction curve that does not reach a plateau at the available maximum number of reads.
-#' This indicates that additional, less abundant species are probably in the sample 
+#' This indicates that additional, less abundant species are probably in the sample
 #' but were not detected at the available depth of sequencing.
 #' The terminal slope of the curve for each sample is documented in the tab-delimited file
 #' as the number of species added in richness by the last 100 reads
 
 #' Note:
-#' Files are stored in the current folder 
+#' Files are stored in the current folder
 #' If a file is needed for downstream analysis, it is also automatically added to the appropriate next folder
 #' under the condition that the original folder structure of Rhea is maintained.
 #' If the primary evaluation of sufficient sequencing depth led to subsequent removal of samples from the analysis,
@@ -47,8 +47,8 @@
 #' Note: the path is denoted by forward slash "/"
 setwd("C:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
 
-#' Please give the file name of the original OTU-table with taxonomic classification 
-file_name<-"OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
+#' Please give the file name of the original OTU-table with taxonomic classification
+file_name <- "OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
 
 #' Please select the normalisation method
 #' 0 = No random subsampling, no rounding
@@ -70,20 +70,20 @@ labelCutoff <- 5                              #<--- CHANGE ACCORDINGLY
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
-######                             Main Script                              ###### 
+######                             Main Script                              ######
 ##################################################################################
 
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("GUniFrac","vegan") 
+packages <-c("GUniFrac","vegan")
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
 {
   if ((pack %in% installed.packages()) == FALSE) {
     install.packages(pack,repos = "http://cloud.r-project.org/")
-  } 
+  }
 }
 
 # Applying the installation on the list of packages
@@ -144,7 +144,6 @@ if (method == 0) {
 rel_otu_table <- t(100 * t(otu_table) / colSums(otu_table))
 
 
-
 # Re-insert the taxonomy information in normalized counts table
 norm_otu_table_tax <- cbind(norm_otu_table,taxonomy)
 
@@ -152,11 +151,11 @@ norm_otu_table_tax <- cbind(norm_otu_table,taxonomy)
 rel_otu_table_tax <- cbind(rel_otu_table,taxonomy)
 
 ################################################################################
-# Generate a two-sided pdf with a rarefaction curve for all samples and a curve 
+# Generate a two-sided pdf with a rarefaction curve for all samples and a curve
 pdf(file = "RarefactionCurve.pdf")
 
 # Plot the rarefaction curve for all samples
-rarefactionCurve <- rarecurve(data.frame(t(otu_table)), 
+rarefactionCurve <- rarecurve(data.frame(t(otu_table)),
                               step = 20,
                               col = "black",
                               lty = "solid",
@@ -170,24 +169,24 @@ slope=vector()
 SampleID=vector()
 
 # Iterate through all samples
-for(i in seq_along(rarefactionCurve)) {
-  # If the sequencing depth is greater than 100, the difference between the last and last-100 richness is calculated 
-  richness <- ifelse(length(rarefactionCurve[[i]])>=100,rarefactionCurve[[i]][length(rarefactionCurve[[i]])] - rarefactionCurve[[i]][length(rarefactionCurve[[i]])-100],1000)
-  slope<- c(slope,richness)
+for (i in seq_along(rarefactionCurve)) {
+  # If the sequencing depth is greater than 100, the difference between the last and last-100 richness is calculated
+  richness <- ifelse(length(rarefactionCurve[[i]]) >= 100, rarefactionCurve[[i]][length(rarefactionCurve[[i]])] - rarefactionCurve[[i]][length(rarefactionCurve[[i]]) - 100], 1000)
+  slope <- c(slope,richness)
   SampleID <- c(SampleID,as.character(names(otu_table)[i]))
 }
 
 # Generate the output table for rarefaction curve
-curvedf <- cbind(SampleID,slope)
-order <- order(as.numeric(curvedf[,2]),decreasing = TRUE)
-# Order the table
-curvedf <- curvedf[as.numeric(order(curvedf[,2]),decreasing = TRUE),]
+curvedf <- cbind(SampleID, slope)
+ordered_vector <- order(as.numeric(curvedf[,2]), decreasing = TRUE)
+print(ordered_vector)# Order the table
+curvedf <- curvedf[order(as.numeric(curvedf[,2]), decreasing = TRUE)]
 
-# Generates a graph with all samples 
-# Underestimated cases are shown in red 
+# Generates a graph with all samples
+# Underestimated cases are shown in red
 for ( i in 1:labelCutoff) {
-  N <- attr(rarefactionCurve[[order[i]]], "Subsample")
-  lines(N, rarefactionCurve[[order[i]]],col="red")
+  N <- attr(rarefactionCurve[[ordered_vector[i]]], "Subsample")
+  lines(N, rarefactionCurve[[ordered_vector[i]]],col="red")
 }
 
 # Determine the plotting width and height
@@ -199,9 +198,9 @@ plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = "Number of Reads",
      ylab = "Number of Species", type = "n", main=paste(labelCutoff,"- most undersampled cases"))
 
 for (i in 1:labelCutoff) {
-  N <- attr(rarefactionCurve[[order[i]]], "Subsample")
-  lines(N, rarefactionCurve[[order[i]]],col="red")
-  text(max(attr(rarefactionCurve[[order[i]]],"Subsample")),max(rarefactionCurve[[order[i]]]), curvedf[i,1],cex=0.6)
+  N <- attr(rarefactionCurve[[ordered_vector[i]]], "Subsample")
+  lines(N, rarefactionCurve[[ordered_vector[i]]],col="red")
+  text(max(attr(rarefactionCurve[[ordered_vector[i]]],"Subsample")), max(rarefactionCurve[[ordered_vector[i]]]), curvedf[i,1],cex=0.6)
 }
 
 dev.off()
@@ -230,7 +229,7 @@ suppressWarnings (try(write.table(rel_otu_table_tax, "../4.Taxonomic-Binning/OTU
 write.table(curvedf, "RarefactionCurve.tab", sep ="\t", quote = FALSE, row.names = FALSE)
 
 
-# Error message 
+# Error message
 if(!flag) { stop("
                  It was not possible to install all required R libraries properly.
                  Please check the installation of all required libraries manually.\n
