@@ -45,7 +45,7 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/normalize/)
 #' Note: the path is denoted by forward slash "/"
-setwd("/home/aggelos/Desktop/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
+setwd("C:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the original OTU-table with taxonomic classification
 file_name <- "OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
