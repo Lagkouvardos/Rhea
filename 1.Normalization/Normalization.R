@@ -179,8 +179,7 @@ for (i in seq_along(rarefactionCurve)) {
 # Generate the output table for rarefaction curve
 curvedf <- cbind(SampleID, slope)
 ordered_vector <- order(as.numeric(curvedf[,2]), decreasing = TRUE)
-print(ordered_vector)# Order the table
-curvedf <- curvedf[order(as.numeric(curvedf[,2]), decreasing = TRUE)]
+curvedf <- curvedf[order(as.numeric(curvedf[,2]), decreasing = TRUE),]
 
 # Generates a graph with all samples
 # Underestimated cases are shown in red
