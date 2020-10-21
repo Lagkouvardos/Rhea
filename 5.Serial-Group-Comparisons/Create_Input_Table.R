@@ -14,7 +14,7 @@
 
 #' Please set the directory of this script as the working folder (e.g. D:/imngs-toolbox/Rhea/differential-abundances")
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/imngs-toolbox/Rhea/5.Serial-Group-Comparisons")  #<--- CHANGE ACCORDINGLY
+setwd("D:/path/to/Rhea/5.Serial-Group-Comparisons")  #<--- CHANGE ACCORDINGLY
 
 #' Please give the name of the file with alpha-diversity measures
 alpha <- "alpha-diversity.tab";                         #<--- CHANGE ACCORDINGLY
