@@ -76,7 +76,7 @@ labelCutoff <- 5                              #<--- CHANGE ACCORDINGLY
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("GUniFrac","vegan")
+packages <- c("GUniFrac","vegan")
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -159,14 +159,14 @@ rarefactionCurve <- rarecurve(data.frame(t(otu_table)),
                               step = 20,
                               col = "black",
                               lty = "solid",
-                              label=F,
+                              label = F,
                               xlab = "Number of Reads",
                               ylab = "Number of Species",
                               main = "Rarefaction Curves of All Samples")
 
 # Generate empty vectors for the analysis of the rarefaction curve
-slope=vector()
-SampleID=vector()
+slope = vector()
+SampleID = vector()
 
 # Iterate through all samples
 for (i in seq_along(rarefactionCurve)) {
@@ -183,7 +183,7 @@ curvedf <- curvedf[order(as.numeric(curvedf[,2]), decreasing = TRUE),]
 
 # Generates a graph with all samples
 # Underestimated cases are shown in red
-for ( i in 1:labelCutoff) {
+for (i in 1:labelCutoff) {
   N <- attr(rarefactionCurve[[ordered_vector[i]]], "Subsample")
   lines(N, rarefactionCurve[[ordered_vector[i]]],col="red")
 }
