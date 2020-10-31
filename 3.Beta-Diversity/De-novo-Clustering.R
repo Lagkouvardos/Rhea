@@ -83,7 +83,7 @@ meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, 
 meta_file <- meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),]
 
 # Load the distance file containing individual sample information (sample names in the first column)
-unifract_dist <- read.table("distance-matrix-gunif.tab", header=T, row.names=1, dec=".", sep="\t")
+unifract_dist <- read.table(input_distance, header=T, row.names=1, dec=".", sep="\t")
 
 # Create the directory where all output files are saved (is named after the number of clusters set above for comparisons)
 folder_name <- paste(cluster_number,"De-Novo-Clustering",sep="_")
