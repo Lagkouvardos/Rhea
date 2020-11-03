@@ -457,7 +457,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
      pre_table <- cbind(prevalence,not_found,total)
   
      # Calculate a two-sided Fisher's test 
-     Fishtest <- fisher.test(pre_table[,-3],alternative = "two.sided")
+     Fishtest <- fisher.test(pre_table[,-3],alternative = "two.sided",workspace=2e8)
      
      # Save the p-value of the Fisher's test
      fish_pvalue <- round(Fishtest$p.value,4)
