@@ -135,7 +135,7 @@ otus_div_stats$Evenness <- otus_div_stats$Shannon.Index/log(otus_div_stats$Richn
 
 # Write the results in a file and copy in directory "Serial-Group-Comparisons" if existing
 write.table(otus_div_stats, "alpha-diversity.tab", sep="\t", col.names=NA, quote=FALSE)
-suppressWarnings (try(write.table(otus_div_stats[c(1,3,5)], "../5.Serial-Group-Comparisons/alpha-diversity.tab", sep = "\t",col.names = NA, quote = FALSE), silent =TRUE))
+suppressWarnings (try(write.table(otus_div_stats[c(1,2,3,5,7)], "../5.Serial-Group-Comparisons/alpha-diversity.tab", sep = "\t",col.names = NA, quote = FALSE), silent =TRUE))
 
 ##################################################################################
 ######                          End of Script                               ###### 
