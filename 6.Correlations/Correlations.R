@@ -238,7 +238,7 @@ transformed_data <- cbind(my_meta_fixed, my_otu_fixed)
 my_scaled_data <- scale(transformed_data, center = TRUE, scale = TRUE)
 
 # Calculate all pairwise correlations using Pearson correlation method
-my_rcorr <- rcorr(as.matrix(my_scaled_data, type = "pearson"))
+my_rcorr <- rcorr(as.matrix(my_scaled_data), type = "pearson")
 
 # Generate vector with variable names
 var_names <- row.names(my_rcorr$r)
