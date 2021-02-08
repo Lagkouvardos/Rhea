@@ -51,6 +51,7 @@ input_meta = "mapping_file.tab"                #<--- CHANGE ACCORDINGLY !!!
 input_tree = "OTUs-Tree.tre"                   #<--- CHANGE ACCORDINGLY !!!
 
 #' Please give the column name (in the mapping file) of the categorical variable to be used for comparison (e.g. Genotype)
+#' Please make sur ethat your name do not contain hyphens "-" as they will cause problems in the parsing of the names.
 group_name = "Diet"                            #<--- CHANGE ACCORDINGLY !!!
 
 ##################################################################################
