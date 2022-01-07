@@ -74,7 +74,7 @@ RelativeAbundanceOTUs <- RelativeAbundanceOTUs[!apply(is.na(RelativeAbundanceOTU
 MetaFile <- read.table(file=MetaFile,header=TRUE,sep="\t",comment.char = "",row.names = 1,check.names = F)
 
 # Clean table from empty lines
-MetaFile <- MetaFile[!apply(is.na(MetaFile) | MetaFile=="",1,all),]
+MetaFile <- MetaFile[!apply(is.na(MetaFile) | MetaFile=="",1,all),,drop=FALSE]
 
 # Read taxonomy file
 TaxanomyAll <- read.table(file=TaxanomyAll,header=TRUE,sep="\t",row.names=NULL,check.names = F)

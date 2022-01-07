@@ -106,10 +106,10 @@ flag <- all(as.logical(lib))
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
 # Clean table from empty lines
-meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),])
+meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),,drop=FALSE])
 
 # Order the mapping file by sample names (ascending)
-meta_file <- data.frame(meta_file[order(row.names(meta_file)),])
+meta_file <- data.frame(meta_file[order(row.names(meta_file)),,drop=FALSE])
 
 # Save the position of the target group name in the mapping file
 meta_file_pos <- which(colnames(meta_file) == group_name)
