@@ -53,7 +53,7 @@ cluster_number = 3                      #<--- CHANGE ACCORDINGLY !!!
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("cluster","ade4","GUniFrac","phangorn") 
+packages <-c("cluster","ade4","GUniFrac","phangorn","vegan") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
