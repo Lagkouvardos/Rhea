@@ -81,7 +81,7 @@ kmers_limit=20
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","cluster","fpc") 
+packages <-c("ade4","GUniFrac","phangorn","cluster","fpc","vegan") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -139,6 +139,9 @@ otu_file <- data.frame(t(otu_file))
 
 # Load the phylogenetic tree calculated from the OTU sequences 
 tree_file <- read.tree(input_tree)
+
+# Remove single quotes from the tips of the tree
+tree_file$tip.label <- gsub("'", "", tree_file$tip.label)
 
 # Root the OTU tree at midpoint 
 rooted_tree <- midpoint(tree_file)
