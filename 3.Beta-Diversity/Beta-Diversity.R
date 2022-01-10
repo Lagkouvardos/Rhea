@@ -81,7 +81,7 @@ kmers_limit=20
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","cluster","fpc") 
+packages <-c("ade4","GUniFrac","phangorn","cluster","fpc","vegan") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -106,10 +106,10 @@ flag <- all(as.logical(lib))
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
 # Clean table from empty lines
-meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),])
+meta_file <- data.frame(meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),,drop=FALSE])
 
 # Order the mapping file by sample names (ascending)
-meta_file <- data.frame(meta_file[order(row.names(meta_file)),])
+meta_file <- data.frame(meta_file[order(row.names(meta_file)),,drop=FALSE])
 
 # Save the position of the target group name in the mapping file
 meta_file_pos <- which(colnames(meta_file) == group_name)
@@ -139,6 +139,9 @@ otu_file <- data.frame(t(otu_file))
 
 # Load the phylogenetic tree calculated from the OTU sequences 
 tree_file <- read.tree(input_tree)
+
+# Remove single quotes from the tips of the tree
+tree_file$tip.label <- gsub("'", "", tree_file$tip.label)
 
 # Root the OTU tree at midpoint 
 rooted_tree <- midpoint(tree_file)

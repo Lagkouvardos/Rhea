@@ -53,7 +53,7 @@ cluster_number = 3                      #<--- CHANGE ACCORDINGLY !!!
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("cluster","ade4","GUniFrac","phangorn") 
+packages <-c("cluster","ade4","GUniFrac","phangorn","vegan") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -80,7 +80,7 @@ flag <- all(as.logical(lib))
 meta_file <- read.table (file = input_meta, check.names = FALSE, header = TRUE, dec = ".", sep = "\t", row.names = 1, comment.char = "")
 
 # Clean table from empty lines
-meta_file <- meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),]
+meta_file <- meta_file[!apply(is.na(meta_file) | meta_file=="",1,all),,drop=FALSE]
 
 # Load the distance file containing individual sample information (sample names in the first column)
 unifract_dist <- read.table(input_distance, header=T, row.names=1, dec=".", sep="\t")
@@ -92,7 +92,7 @@ dir.create(folder_name)
 ####################       Calculate beta-diversity          ###################
 
 # Order the mapping file by sample names (ascending)
-meta_file <- meta_file[order(row.names(meta_file)),]
+meta_file <- meta_file[order(row.names(meta_file)),,drop=FALSE]
 
 
 # Generate vector with assigned group to each sample
