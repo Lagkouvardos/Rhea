@@ -167,17 +167,20 @@ rarefactionCurve <- rarecurve(data.frame(t(otu_table)),
 # Generate empty vectors for the analysis of the rarefaction curve
 slope = vector()
 SampleID = vector()
+angle <- c()
 
 # Iterate through all samples
 for (i in seq_along(rarefactionCurve)) {
-  # If the sequencing depth is greater than 100, the difference between the last and last-100 richness is calculated
-  richness <- ifelse(length(rarefactionCurve[[i]]) >= 100, rarefactionCurve[[i]][length(rarefactionCurve[[i]])] - rarefactionCurve[[i]][length(rarefactionCurve[[i]]) - 100], 1000)
+  # If the sequencing depth is greater than 100, the slope of the line that passes between the last and last-100 count is calculated
+  richness <- ifelse(length(rarefactionCurve[[i]]) > 6, 
+                     (rarefactionCurve[[i]][length(rarefactionCurve[[i]])] - rarefactionCurve[[i]][length(rarefactionCurve[[i]])-5])/(attr(rarefactionCurve[[i]], "Subsample")[length(rarefactionCurve[[i]])]-attr(rarefactionCurve[[i]], "Subsample")[length(rarefactionCurve[[i]])-5]) , 1000)
+  angle[i] <- ifelse(richness!=1000, atan(richness)*180/pi, NA)
   slope <- c(slope,richness)
   SampleID <- c(SampleID,as.character(names(otu_table)[i]))
 }
 
 # Generate the output table for rarefaction curve
-curvedf <- cbind(SampleID, slope)
+curvedf <- cbind(SampleID, slope, angle)
 ordered_vector <- order(as.numeric(curvedf[,2]), decreasing = TRUE)
 curvedf <- curvedf[order(as.numeric(curvedf[,2]), decreasing = TRUE),]
 
@@ -189,8 +192,8 @@ for (i in 1:labelCutoff) {
 }
 
 # Determine the plotting width and height
-Nmax <- sapply(rarefactionCurve, function(x) max(attr(x, "Subsample")))
-Smax <- sapply(rarefactionCurve, max)
+Nmax <- sapply(rarefactionCurve[ordered_vector[1:labelCutoff]], function(x) max(attr(x, "Subsample")))
+Smax <- sapply(rarefactionCurve[ordered_vector[1:labelCutoff]], max)
 
 # Creates an empty plot for rarefaction curves of underestimated cases
 plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = "Number of Reads",
