@@ -105,7 +105,8 @@ meta_file <- cbind(data_cluster,meta_file)
 meta <- metaMDS(unifract_dist,k = 2)
 
 # Calculate the significance of variance to compare multivariate sample means (including two or more dependent variables)
-adonis<-adonis(as.dist(unifract_dist) ~ data_cluster)
+adonis<-adonis2(as.dist(unifract_dist) ~ data_cluster)
+permdisp <- permutest(betadisper(as.dist(unifract_dist_comp),as.factor(data_cluster),type="median"))
 
 # Generated MDS and NMDS plot are saved in one pdf file (named after number of set clusters)
 file_name <- paste(cluster_number,"de-novo-clustering.pdf",sep="_")
@@ -115,14 +116,16 @@ pdf(paste(folder_name,"/",file_name,sep=""))
 # Groups are based on number of set clusters
 s.class(cmdscale(unifract_dist, k = 2), col = rainbow(cluster_number), 
         fac=as.factor(data_cluster), grid=F,
-        sub=paste("MDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
-        )
+        sub = paste("MDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
+                    "PERMANOVA  p=",adonis[1,5],sep="")
+)
 
 # Display NMDS plot 
 # Groups are based on number of set clusters
 s.class(meta$points, col = rainbow(cluster_number), 
         fac=as.factor(data_cluster), grid=F,
-        sub=paste("metaNMDS plot of Microbial Profiles\n(p-value",adonis[[1]][6][[1]][1],")",sep="")
+        sub = paste("metaNMDS plot of Microbial Profiles\nPERMDISP   p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
+                    "PERMANOVA  p=",adonis[1,5],sep="")
 )
 
 dev.off()
