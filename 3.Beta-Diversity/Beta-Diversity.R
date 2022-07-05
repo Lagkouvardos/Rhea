@@ -1,6 +1,6 @@
 #' Script: Beta-Diversity
 #' Version: 1.1
-#' Last modified on 08/12/2020
+#' Last modified on 05/7/2022
 #' Author: Ilias Lagkouvardos
 #' Contributions by: Thomas Clavel, Sandra Reitmeier
 #'
@@ -60,15 +60,15 @@ group_name = "Diet"                            #<--- CHANGE ACCORDINGLY !!!
 
 #' Turn on sample labeling
 #' 0 = Samples are not labeled in the MDS/NMDS plots
-#' 1 = All Samples are labed in the MDS/NMDS plots
+#' 1 = All Samples are labeled in the MDS/NMDS plots
 label_samples = 0
 
-#' Determine which sample lable should appear
+#' Determine which sample label should appear
 #' Write the name of samples (in quotation marks), which should appear in the MDS/NMDS plots, in the vector (c) below
 #' If more than one sample should be plotted, please separate their IDs by comma (e.g. c("sample1","sample2"))
 label_id =c("")
 
-#' De-Novo Clustering will be perfomed for the number of samples or maximal for the set limit
+#' De-Novo Clustering will be performed for the number of samples or maximal for the set limit
 #' Default Limit is 100
 kmers_limit=20
 
@@ -191,13 +191,15 @@ pdf(paste(group_name,"/",file_name,sep=""))
 # Omit cases where there isn't data for the sample (NA)
 all_groups_comp <- all_groups[!is.na(all_groups)]
 unifract_dist_comp <- unifract_dist[!is.na(all_groups), !is.na(all_groups)]
-adonis<-adonis(as.dist(unifract_dist_comp) ~ all_groups_comp)
+adonis<-adonis2(as.dist(unifract_dist_comp) ~ all_groups_comp)
+permdisp <- permutest(betadisper(as.dist(unifract_dist_comp),as.factor(all_groups_comp),type="median"))
 all_groups_comp<-factor(all_groups_comp,levels(all_groups_comp)[unique(all_groups_comp)])
 
 # Calculate and display the MDS plot (Multidimensional Scaling plot)
 s.class(
   cmdscale(unifract_dist_comp, k = 2), col = unique(plot_color), cpoint =
-    2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\n(p-value ",adonis[[1]][6][[1]][1],")",sep="")
+    2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
+                                          "PERMANOVA  p=",adonis[1,5],sep="")
 )
 if (label_samples==1) {
   lab_samples <- row.names(cmdscale(unifract_dist_comp, k = 2))
@@ -209,7 +211,8 @@ if (label_samples==1) {
 meta <- metaMDS(unifract_dist_comp,k = 2)
 s.class(
   meta$points, col = unique(plot_color), cpoint = 2, fac = all_groups_comp,
-  sub = paste("metaNMDS plot of Microbial Profiles\n(p-value ",adonis[[1]][6][[1]][1],")",sep="")
+  sub = paste("metaNMDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
+              "PERMANOVA  p=",adonis[1,5],sep="")
 )
 if (label_samples==1){
   lab_samples <- row.names(meta$points)
@@ -230,6 +233,7 @@ if (dim(table(unique_groups)) > 2) {
   
   # Initialise vector and lists
   pVal = NULL
+  permdisppval=NULL
   pairedMatrixList <- list(NULL)
   pair_1_list <- NULL
   pair_2_list <- NULL
@@ -280,16 +284,22 @@ if (dim(table(unique_groups)) > 2) {
     pairedMatrixList[[i]] <- paired_matrix
     
     # Applies multivariate analysis to a pair out of the selected groups
-    adonis <- adonis(paired_matrix ~ all_groups_comp[all_groups_comp == pair_1 |
-                                                       all_groups_comp == pair_2])
+    adonis <- adonis2(paired_matrix ~ all_groups_comp[all_groups_comp == pair_1 |
+                                                        all_groups_comp == pair_2])
+    
+    permdisp <- permutest(betadisper(as.dist(paired_matrix),as.factor(all_groups_comp[all_groups_comp == pair_1 |
+                                                                                        all_groups_comp == pair_2]),type="median"),pairwise = T)
     
     # List p-values
-    pVal[i] <- adonis[[1]][6][[1]][1]
+    pVal[i] <- adonis[1,5]
+    permdisppval[i] <- permdisp$pairwise[2]
     
   }
   
   # Adjust p-values for multiple testing according to Benjamini-Hochberg method
-  pVal_BH <- p.adjust(pVal,method="BH", n=length(pVal))
+  pVal_BH <- round(p.adjust(pVal,method="BH", n=length(pVal)),4)
+  permdisppval_BH <- round(p.adjust(permdisppval,method="BH", n=length(permdisppval)),4)
+  
   
   # Generated NMDS plots are stored in one pdf file called "pairwise-beta-diversity-nMDS.pdf"
   file_name <- paste(group_name,"pairwise-beta-diversity-NMDS.pdf",sep="_")
@@ -302,7 +312,8 @@ if (dim(table(unique_groups)) > 2) {
       col = rainbow(length(levels(all_groups_comp))), cpoint = 2,
       fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
                                         all_groups_comp == pair_2_list[i]]),
-      sub = paste("NMDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n(p-value ",pVal[i],","," corr. p-value ", pVal_BH[i],")",sep="")
+      sub = paste("NMDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n PERMDISP     p=",permdisppval[[i]],",","  p.adj=", permdisppval_BH[i],"\n",
+                  " PERMANOVA  p=",pVal[i],","," p.adj=",pVal_BH[i],sep="")
     )
   }
   dev.off()
@@ -316,7 +327,9 @@ if (dim(table(unique_groups)) > 2) {
     s.class(
       cmdscale(pairedMatrixList[[i]], k = 2), col = rainbow(length(levels(all_groups_comp))), cpoint =
         2, fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
-                                             all_groups_comp == pair_2_list[i]]), sub = paste("MDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n(p-value ",pVal[i],","," corr. p-value ", pVal_BH[i],")",sep="")
+                                             all_groups_comp == pair_2_list[i]]), 
+      sub = paste("MDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n PERMDISP     p=",permdisppval[[i]],",","  p.adj=", permdisppval_BH[i],"\n",
+                  " PERMANOVA  p=",pVal[i],","," p.adj=",pVal_BH[i],sep="")
     )
   }
   dev.off()                                     
