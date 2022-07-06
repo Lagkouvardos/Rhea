@@ -45,7 +45,7 @@
 
 #' Please set the directory of the script as the working folder (e.g D:/studyname/NGS-Data/Rhea/normalize/)
 #' Note: the path is denoted by forward slash "/"
-setwd("D:/path/to/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
+setwd("/home/mohsen/CRC1371/Tasks/Rhea-mod/Rhea/1.Normalization")      #<--- CHANGE ACCORDINGLY
 
 #' Please give the file name of the original OTU-table with taxonomic classification
 file_name <- "OTUs-Table.tab"                   #<--- CHANGE ACCORDINGLY
@@ -106,6 +106,16 @@ otu_table <-  read.table (file_name,
                           row.names = 1,
                           comment.char = "")
 
+# Making sure tha taxonomy column gets lower-case
+col_names <- colnames(otu_table)
+tax_ind <- which(sapply(tolower(col_names),
+                        function(x) "taxonomy" %in% x, USE.NAMES = FALSE))
+if (length(tax_ind) != 0) {
+  col_names[tax_ind] <- tolower(col_names[tax_ind])
+  colnames(otu_table) <- col_names
+}
+rm(col_names)
+rm(tax_ind)
 
 # Clean table from empty lines
 otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
