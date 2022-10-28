@@ -85,7 +85,7 @@ ReplaceMissingValues ="NO"
 ##################################################################################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","grid","ggrepel","gtable","Matrix","cowplot","muStat") 
+packages <-c("plotrix","PerformanceAnalytics","reshape","ggplot2","gridExtra","grid","ggrepel","gtable","Matrix","cowplot","PMCMRplus") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -403,7 +403,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
     fit <- tryCatch (friedman.test(mat),error = function(i) {fail <<- TRUE})
   } else{
     # Performs a Friedman Rank Sum Test with Skillingsmack Test for missing Data
-    fit <-  tryCatch (mu.friedman.test(mat,factor(as.vector(col(mat))),factor(as.vector(row(mat))),blkwght="skillingsmack"),error = function(i) {fail <<- TRUE})
+    fit <-  tryCatch (skillingsMackTest(mat),error = function(i) {fail <<- TRUE})
     
   }
   # Function to assign corrected and not-corrected pvalues  
