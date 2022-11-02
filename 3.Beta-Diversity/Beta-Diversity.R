@@ -373,9 +373,9 @@ for (i in 1:2){
   if (i==2) { pdf(paste0(group_name,"/","De-novo-clustering.pdf"))}
   
   plot(ch_nclusters, type="h", xlab="k clusters", ylab="CH index",main="Optimal number of clusters (CH index)")
-  plot(sil_nclusters, type="h", xlab="k clusters", ylab="Average silhouette width",main="Optimal number of clusters (Silhouette index")
+  plot(sil_nclusters, type="h", xlab="k clusters", ylab="Average silhouette width",main="Optimal number of clusters (Silhouette index)")
   plot(dunn_nclusters, type="h", xlab="k clusters", ylab="Dunn Index",main="Optimal number of clusters (Dunn Index)")
-  plot(db_nclusters, type="h", xlab="k clusters", ylab="Davies-Bouldin Index",main="Optimal number of clusters (Davies-Bouldin Index")
+  plot(db_nclusters, type="h", xlab="k clusters", ylab="Davies-Bouldin Index",main="Optimal number of clusters (Davies-Bouldin Index)")
   
   dev.off()
 }
