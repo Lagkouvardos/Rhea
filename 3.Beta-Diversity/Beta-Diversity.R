@@ -81,7 +81,7 @@ kmers_limit=20
 ###################       Load all required libraries     ########################
 
 # Check if required packages are already installed, and install if missing
-packages <-c("ade4","GUniFrac","phangorn","cluster","fpc","vegan") 
+packages <-c("ade4","GUniFrac","phangorn","cluster","fpc","vegan","clusterSim") 
 
 # Function to check whether the package is installed
 InsPack <- function(pack)
@@ -340,6 +340,8 @@ if (dim(table(unique_groups)) > 2) {
 
 ch_nclusters=NULL
 sil_nclusters=NULL
+dunn_nclusters=NULL
+db_nclusters=NULL
 
 if (dim(otu_file)[1]-1 <= kmers_limit) {
   kmers_limit=dim(otu_file)[1]-1
@@ -348,25 +350,35 @@ for (k in 1:kmers_limit) {
   if (k==1) {
     ch_nclusters[k]=NA 
     sil_nclusters[k]=NA
+    dunn_nclusters=NA
+    db_nclusters=NA
   } else {
     # Partitioning the data into k clusters (max k is number of samples within the dataset)
     data_cluster=as.vector(pam(as.dist(unifract_dist_comp), k, diss=TRUE)$clustering)
     
     # Calculate Calinski-Harabasz and silhouette Index 
     index=cluster.stats(as.dist(unifract_dist_comp),data_cluster)
+    index_db=index.DB(x=otu_file,cl=data_cluster,d=as.dist(unifract_dist_comp), centrotypes="medoids")
     ch_nclusters[k] <- index[["ch"]]
     sil_nclusters[k] <- index[["avg.silwidth"]]
+    dunn_nclusters[k] <- index[["dunn2"]]
+    db_nclusters[k] <-  index_db[["DB"]]
     print(k)
   }
 }
 
 # Generated plot showing the optimal number of clusters
-pdf("de-novo-clustering.pdf")
-
-plot(ch_nclusters, type="h", xlab="k clusters", ylab="CH index",main="Optimal number of clusters")
-plot(sil_nclusters, type="h", xlab="k clusters", ylab="Average silhouette width",main="Optimal number of clusters")
-
-dev.off()
+for (i in 1:2){
+  if (i==1) { pdf("De-novo-clustering.pdf")}
+  if (i==2) { pdf(paste0(group_name,"/","De-novo-clustering.pdf"))}
+  
+  plot(ch_nclusters, type="h", xlab="k clusters", ylab="CH index",main="Optimal number of clusters (CH index)")
+  plot(sil_nclusters, type="h", xlab="k clusters", ylab="Average silhouette width",main="Optimal number of clusters (Silhouette index)")
+  plot(dunn_nclusters, type="h", xlab="k clusters", ylab="Dunn Index",main="Optimal number of clusters (Dunn Index)")
+  plot(db_nclusters, type="h", xlab="k clusters", ylab="Davies-Bouldin Index",main="Optimal number of clusters (Davies-Bouldin Index)")
+  
+  dev.off()
+}
 
 #################################################################################
 ######                        Write Output Files                           ######
