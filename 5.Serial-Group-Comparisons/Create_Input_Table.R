@@ -82,9 +82,15 @@ TaxanomyAll <- read.table(file=TaxanomyAll,header=TRUE,sep="\t",row.names=NULL,c
 # Clean table from empty lines
 TaxanomyAll <- TaxanomyAll[!apply(is.na(TaxanomyAll) | TaxanomyAll=="",1,all),]
 
+# Select the RelativeAbundanceOTUs and alpha rows based on the mapping file
+RelativeAbundanceOTUs <- RelativeAbundanceOTUs[rownames(MetaFile),]
+alpha <- alpha[rownames(MetaFile),]
+
+# Prepare TaxanomyAll table
 ColnameTo_assign<- TaxanomyAll[,1]
 TaxanomyAll[,1] <- NULL
 TaxanomyAll <- as.data.frame(t(TaxanomyAll))
+TaxanomyAll <- TaxanomyAll[rownames(MetaFile),]
 colnames(TaxanomyAll) <- ColnameTo_assign
 
 ######################          MAIN PROGRAM                #####################
