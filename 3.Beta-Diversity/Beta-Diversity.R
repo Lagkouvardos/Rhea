@@ -133,7 +133,7 @@ otu_file <- otu_file[,rownames(meta_file)]
 otu_file <- otu_file[,order(names(otu_file))]
 
 # Transpose OTU-table and convert format to a data frame
-otu_file <- data.frame(t(otu_file))
+otu_file <- data.frame(t(otu_file), check.names = FALSE)
 
 #------------------------------------------------------------------------
 
