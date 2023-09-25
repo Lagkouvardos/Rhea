@@ -195,29 +195,31 @@ adonis<-adonis2(as.dist(unifract_dist_comp) ~ all_groups_comp)
 permdisp <- permutest(betadisper(as.dist(unifract_dist_comp),as.factor(all_groups_comp),type="median"))
 all_groups_comp<-factor(all_groups_comp,levels(all_groups_comp)[unique(all_groups_comp)])
 
-# Calculate and display the MDS plot (Multidimensional Scaling plot)
-s.class(
-  cmdscale(unifract_dist_comp, k = 2), col = unique(plot_color), cpoint =
-    2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
-                                          "PERMANOVA  p=",adonis[1,5],sep="")
-)
-if (label_samples==1) {
-  lab_samples <- row.names(cmdscale(unifract_dist_comp, k = 2))
-  ifelse (label_id != "",lab_samples <- replace(lab_samples, !(lab_samples %in% label_id), ""), lab_samples)
-  text(cmdscale(unifract_dist_comp, k = 2),labels=lab_samples,cex=0.7,adj=c(-.1,-.8))
-}
-
-# Calculate and display the NMDS plot (Non-metric Multidimensional Scaling plot)
-meta <- metaMDS(unifract_dist_comp,k = 2)
-s.class(
-  meta$points, col = unique(plot_color), cpoint = 2, fac = all_groups_comp,
-  sub = paste("metaNMDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
-              "PERMANOVA  p=",adonis[1,5],sep="")
-)
-if (label_samples==1){
-  lab_samples <- row.names(meta$points)
-  ifelse (label_id != "",lab_samples <- replace(lab_samples, !(lab_samples %in% label_id), ""), lab_samples)
-  text(meta$points,labels=lab_samples,cex=0.7,adj=c(-.1,-.8))
+if(nrow(unifract_dist_comp)>2){
+  # Calculate and display the MDS plot (Multidimensional Scaling plot)
+  s.class(
+    cmdscale(unifract_dist_comp, k = 2), col = unique(plot_color), cpoint =
+      2, fac = all_groups_comp, sub = paste("MDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
+                                            "PERMANOVA  p=",adonis[1,5],sep="")
+  )
+  if (label_samples==1) {
+    lab_samples <- row.names(cmdscale(unifract_dist_comp, k = 2))
+    ifelse (label_id != "",lab_samples <- replace(lab_samples, !(lab_samples %in% label_id), ""), lab_samples)
+    text(cmdscale(unifract_dist_comp, k = 2),labels=lab_samples,cex=0.7,adj=c(-.1,-.8))
+  }
+  
+  # Calculate and display the NMDS plot (Non-metric Multidimensional Scaling plot)
+  meta <- metaMDS(unifract_dist_comp,k = 2)
+  s.class(
+    meta$points, col = unique(plot_color), cpoint = 2, fac = all_groups_comp,
+    sub = paste("metaNMDS plot of Microbial Profiles\nPERMDISP     p=",permdisp[["tab"]][["Pr(>F)"]][1],"\n",
+                "PERMANOVA  p=",adonis[1,5],sep="")
+  )
+  if (label_samples==1){
+    lab_samples <- row.names(meta$points)
+    ifelse (label_id != "",lab_samples <- replace(lab_samples, !(lab_samples %in% label_id), ""), lab_samples)
+    text(meta$points,labels=lab_samples,cex=0.7,adj=c(-.1,-.8))
+  }
 }
 
 #close the pdf file
@@ -306,15 +308,17 @@ if (dim(table(unique_groups)) > 2) {
   pdf(paste(group_name,"/",file_name,sep=""))
   
   for(i in 1:length(combn(unique_groups,2)[1,])){
-    meta <- metaMDS(pairedMatrixList[[i]], k = 2)
-    s.class(
-      meta$points,
-      col = rainbow(length(levels(all_groups_comp))), cpoint = 2,
-      fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
-                                        all_groups_comp == pair_2_list[i]]),
-      sub = paste("NMDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n PERMDISP     p=",permdisppval[[i]],",","  p.adj=", permdisppval_BH[i],"\n",
-                  " PERMANOVA  p=",pVal[i],","," p.adj=",pVal_BH[i],sep="")
-    )
+    if (nrow(pairedMatrixList[[i]])>2){
+      meta <- metaMDS(pairedMatrixList[[i]], k = 2)
+      s.class(
+        meta$points,
+        col = rainbow(length(levels(all_groups_comp))), cpoint = 2,
+        fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
+                                          all_groups_comp == pair_2_list[i]]),
+        sub = paste("NMDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n PERMDISP     p=",permdisppval[[i]],",","  p.adj=", permdisppval_BH[i],"\n",
+                    " PERMANOVA  p=",pVal[i],","," p.adj=",pVal_BH[i],sep="")
+      )
+    }
   }
   dev.off()
   
@@ -323,14 +327,16 @@ if (dim(table(unique_groups)) > 2) {
   pdf(paste(group_name,"/",file_name,sep=""))
   
   for(i in 1:length(combn(unique_groups,2)[1,])){
-    # Calculate and display the MDS plot (Multidimensional Scaling plot)
-    s.class(
-      cmdscale(pairedMatrixList[[i]], k = 2), col = rainbow(length(levels(all_groups_comp))), cpoint =
-        2, fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
-                                             all_groups_comp == pair_2_list[i]]), 
-      sub = paste("MDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n PERMDISP     p=",permdisppval[[i]],",","  p.adj=", permdisppval_BH[i],"\n",
-                  " PERMANOVA  p=",pVal[i],","," p.adj=",pVal_BH[i],sep="")
-    )
+    if (nrow(pairedMatrixList[[i]])>2){
+      # Calculate and display the MDS plot (Multidimensional Scaling plot)
+      s.class(
+        cmdscale(pairedMatrixList[[i]], k = 2), col = rainbow(length(levels(all_groups_comp))), cpoint =
+          2, fac = as.factor(all_groups_comp[all_groups_comp == pair_1_list[i] |
+                                               all_groups_comp == pair_2_list[i]]), 
+        sub = paste("MDS plot of Microbial Profiles\n ",pair_1_list[i]," - ",pair_2_list[i], "\n PERMDISP     p=",permdisppval[[i]],",","  p.adj=", permdisppval_BH[i],"\n",
+                    " PERMANOVA  p=",pVal[i],","," p.adj=",pVal_BH[i],sep="")
+      )
+    }
   }
   dev.off()                                     
   
