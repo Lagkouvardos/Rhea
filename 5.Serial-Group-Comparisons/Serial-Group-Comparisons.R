@@ -316,7 +316,7 @@ for (i in dependant_variables_start:dim(input_table)[2])
   
   # Save the name of the observed variable/OTU
   my_name <- colnames(input_table)[i]
-  test_table <- xtabs(my_test_vector ~ independent_variable)
+  test_table <- xtabs(my_test_vector ~ independent_variable, addNA = T, na.rm = T )
   
   # Number of groups to be compared
   num_of_represented_groups <- sum(as.vector(test_table) > 0)
