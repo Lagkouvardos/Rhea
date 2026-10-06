@@ -1,5 +1,5 @@
-#' Version 1.0
-#' This script was last modified on 11/02/2016
+#' Version 1.1
+#' This script was last modified on 06/10/2026
 #' Script: Taxonomic Binning
 #'
 #' Provides an overview of sample-specific relative abundances for all taxonomic levels
@@ -7,20 +7,30 @@
 #' Input:
 #' 1. Set the path to the directory where the file is stored
 #' 2. Write the name of the examined OTU file
+#' 3. Number of taxonomic levels in the taxonomy column: 6 or 7 (default 7)
+#' 4. Whether the taxonomy goes down to species level: TRUE or FALSE (default FALSE)
 #'
-#' Output: The script is generating seven tab-delimited files
-#' 1. Relative taxonomic abundance at the kingdom level for each sample
-#' 2. Relative taxonomic abundance at the phyla level for each sample
-#' 3. Relative taxonomic abundance at the class level for each sample
-#' 4. Relative taxonomic abundance at the order level for each sample
-#' 5. Relative taxonomic abundance at the family level for each sample
-#' 6. Relative taxonomic abundance at the genera level for each sample
-#' 7. Relative taxonomic abundance at all taxonomic levels for each sample
-#' 
+#' Supported taxonomy formats (levels separated by ";", a final ";" is optional):
+#'   6 levels: Kingdom;Phylum;Class;Order;Family;Genus
+#'   7 levels: Domain;Kingdom;Phylum;Class;Order;Family;Genus   (new SILVA)
+#'   with species = TRUE one more level is expected at the end: ...;Genus;Species
+#' Missing information must still be separated by ";" (e.g. ...;Enterobacteriaceae;;)
+#'
+#' Output:
+#' 1. Relative taxonomic abundance at each taxonomic level for each sample (tab-delimited)
+#'    6 levels: 0.Kingdom, 1.Phyla, 2.Classes, 3.Orders, 4.Families, 5.Genera (.all.tab)
+#'    7 levels: 0.Domain, 1.Kingdom, 2.Phyla, 3.Classes, 4.Orders, 5.Families, 6.Genera (.all.tab)
+#'    species:  6.Species.all.tab (with 6 levels) or 7.Species.all.tab (with 7 levels)
+#' 2. Relative taxonomic abundance at all taxonomic levels for each sample (tax.summary.all.tab)
+#' 3. Only if the taxonomy column has problems: taxonomy-errors.tab (the script then stops)
+#'
 #' Graphical Output:
-#' 8. Distribution of taxonomic relative abundances across all taxonomic groups for all samples
+#' 4. Distribution of taxonomic relative abundances across all taxonomic groups for all samples
 #'
 #' Concept:
+#' The taxonomy column is checked: every OTU must have the expected number of levels and
+#' no empty level may be followed by a filled level. If any OTU fails, the problems are
+#' printed on screen, written to taxonomy-errors.tab, and the script stops.
 #' Taxonomic information is split into the different taxonomic levels for each OTU
 #' Relative abundance values of OTUs belonging to the same taxonomic group are summed up
 #' Individual taxonomic composition for each sample is generated
@@ -28,6 +38,13 @@
 #' Note:
 #' If taxonomic information at a specific level is missing, the entry is replaced by
 #' the last available taxonomic level including the prefix "unknown_"
+#' Before the check: spaces around ";" are removed, the suffix "--other" is removed, and a
+#' level whose whole value is "Incertae Sedis" is set to empty together with all deeper levels
+#' (a message on screen reports how many OTUs were affected)
+#' Species names are written as "Genus species" (e.g. Enterococcus faecalis)
+#' Non-breaking spaces are replaced by normal spaces. Any other character that is not valid
+#' UTF-8 (e.g. text saved with Windows encoding) is an error, shown as <xx> in taxonomy-errors.tab
+
 
 ##################################################################################
 ######             Set parameters in this section manually                  ######
@@ -40,12 +57,108 @@ setwd("D:/path/to/Rhea/4.Taxonomic-Binning") #<--- CHANGE ACCORDINGLY
 #' Please give the file name of the OTU-table containing relative abundances and taxonomic classification 
 otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 
+#' Number of taxonomic levels before species: 6 (Kingdom...Genus) or 7 (Domain...Genus, new SILVA)
+n_levels <- 6  #<--- CHANGE ACCORDINGLY
+
+#' Does the taxonomy go down to species level? (TRUE or FALSE)
+species <- FALSE  #<--- CHANGE ACCORDINGLY
 
 ######                  NO CHANGES ARE NEEDED BELOW THIS LINE               ######
 
 ##################################################################################
 ######                             Main Script                              ###### 
 ##################################################################################
+
+###################      Function: check taxonomy column      ####################
+
+# ---------------------------------------------------------------------------
+# check_taxonomy(): clean the taxonomy column and check that every OTU has the
+# expected number of levels and no empty level followed by a filled level.
+#   taxonomy   character vector (last column of the OTU table)
+#   otu_ids    OTU names, same order
+#   n_levels   6 or 7 (levels before species)
+#   species    TRUE if a species level follows the genus
+# Returns list(levels, fields [matrix OTU x level], errors [data.frame])
+# ---------------------------------------------------------------------------
+check_taxonomy <- function(taxonomy, otu_ids, n_levels, species) {
+  if (!n_levels %in% c(6, 7)) stop("n_levels must be 6 or 7")
+  if (!is.logical(species) || length(species) != 1 || is.na(species)) stop("species must be TRUE or FALSE")
+  level_names <- if (n_levels == 7) c("Domain","Kingdom","Phylum","Class","Order","Family","Genus")
+                 else c("Kingdom","Phylum","Class","Order","Family","Genus")
+  if (species) level_names <- c(level_names, "Species")
+  n_expected <- length(level_names)
+
+  original <- as.character(taxonomy)
+  original[is.na(original)] <- ""
+  tax <- original
+
+  # Non-breaking spaces (often copied from web pages or Excel) become normal spaces:
+  # as a Windows byte in text that is not valid UTF-8, and as the UTF-8 character
+  nbsp_byte <- !validUTF8(tax) & grepl("\xa0", tax, fixed = TRUE, useBytes = TRUE)
+  tax[nbsp_byte] <- gsub("\xa0", " ", tax[nbsp_byte], fixed = TRUE, useBytes = TRUE)
+  nbsp_utf8 <- validUTF8(tax) & grepl("\xc2\xa0", tax, fixed = TRUE, useBytes = TRUE)
+  tax[nbsp_utf8] <- gsub("\xc2\xa0", " ", tax[nbsp_utf8], fixed = TRUE, useBytes = TRUE)
+  n_nbsp <- sum(nbsp_byte | nbsp_utf8)
+
+  # Any other character that is not valid UTF-8 is an error; in the error file
+  # such characters are shown by their byte code, e.g. <e9>
+  invalid <- !validUTF8(tax)
+  shown <- original
+  shown[invalid] <- iconv(tax[invalid], "latin1", "ASCII", sub = "byte")
+  n_found_invalid <- lengths(strsplit(tax[invalid], ";", fixed = TRUE, useBytes = TRUE))
+  tax[invalid] <- ""   # these OTUs are not processed further
+
+  # Spaces around ';' and at both ends are removed (spaces inside names are kept)
+  cleaned <- gsub("\\s*;\\s*", ";", trimws(tax))
+  n_spaces <- sum(cleaned != tax)
+  tax <- cleaned
+  # The suffix "--other" is removed from any level (e.g. Pseudomonadati--other -> Pseudomonadati)
+  no_other <- gsub("--other(?=;|$)", "", tax, perl = TRUE)
+  n_other <- sum(no_other != tax)
+  tax <- no_other
+
+  # Levels per OTU: strsplit keeps empty levels and drops only the empty piece after
+  # a final ';'  ->  "a;b;" = 2 levels, "a;b" = 2 levels, "a;;" = 2 levels
+  fields  <- strsplit(tax, ";", fixed = TRUE)
+  n_found <- lengths(fields)
+  n_found[invalid] <- n_found_invalid
+
+  # A level whose whole value is "Incertae Sedis" becomes empty, together with all deeper levels
+  n_incertae <- 0
+  fields <- lapply(fields, function(f) {
+    hit <- which(tolower(f) == "incertae sedis")
+    if (length(hit) > 0) { f[hit[1]:length(f)] <- ""; n_incertae <<- n_incertae + 1 }
+    f })
+
+  # Problems of each OTU (a row can have more than one)
+  problem <- rep("", length(tax))
+  add_problem <- function(idx, txt) problem[idx] <<- ifelse(problem[idx] == "", txt, paste(problem[idx], txt, sep = "; "))
+  add_problem(which(invalid), "invalid character (not UTF-8, shown as <xx>)")
+  add_problem(which(n_found != n_expected & !invalid), paste0("wrong number of levels (expected ", n_expected, ")"))
+  gap <- sapply(fields, function(f) {
+    empty <- f == ""
+    any(empty) && any(!empty[which(empty)[1]:length(f)]) })
+  add_problem(which(gap & !invalid), "empty level followed by a filled level")
+
+  if (n_nbsp > 0)     message("Non-breaking spaces were replaced by normal spaces in ", n_nbsp, " OTU(s)")
+  if (n_spaces > 0)   message("Spaces around ';' were removed in ", n_spaces, " OTU(s)")
+  if (n_other > 0)    message("'--other' was removed in ", n_other, " OTU(s)")
+  if (n_incertae > 0) message("'Incertae Sedis' was set to empty (with all deeper levels) in ", n_incertae, " OTU(s)")
+
+  bad <- problem != ""
+  errors <- data.frame(OTU = otu_ids[bad], taxonomy = shown[bad], levels_found = n_found[bad],
+                       levels_expected = rep(n_expected, sum(bad)), problem = problem[bad])
+  if (any(bad)) return(list(levels = level_names, fields = NULL, errors = errors, n_found = n_found))
+
+  fields <- do.call(rbind, fields)
+  dimnames(fields) <- list(otu_ids, level_names)
+  # Species written as "Genus species" (a filled species always has a filled genus here)
+  if (species) {
+    has_sp <- fields[, "Species"] != ""
+    fields[has_sp, "Species"] <- paste(fields[has_sp, "Genus"], fields[has_sp, "Species"])
+  }
+  list(levels = level_names, fields = fields, errors = errors, n_found = n_found)
+}
 
 ###################            Read input table              ####################
 
@@ -61,187 +174,91 @@ otu_table <-  read.table (otu_file,
 # Clean table from empty lines
 otu_table <- otu_table[!apply(is.na(otu_table) | otu_table=="",1,all),]
 
-# Create a dataframe with a number of rows identical to the number of OTUs in the dataset
-taxonomy <- otu_table[,dim(otu_table)[2]]
+###################       Check the taxonomy column          ####################
 
-# Test if the taxonomy column is in the correct format (delimited by semicolon)
-if(all(grepl("(?:[^;]*;){6}", taxonomy))==FALSE) {
+# Remove an error file left from a previous run
+invisible(suppressWarnings(file.remove(file.path("Taxonomic-Binning", "taxonomy-errors.tab"))))
 
-#Send error message if taxonomy is not in the right format
-  stop("Wrong number of taxonomic classes\n
+# Taxonomy is the last column
+tax_check <- check_taxonomy(otu_table[,dim(otu_table)[2]], row.names(otu_table),
+                            n_levels = n_levels, species = species)
 
-Taxonomic levels have to be separated by semicolons (six in total). 
-IMPORTANT: if taxonomic information at any level is missing, the semicolons are still needed:\n
-       
-      e.g.Bacteria;Bacteroidetes;Bacteroidia;Bacteroidales;Prevotellaceae;Prevotella;
-      e.g.Bacteria;Bacteroidetes;Bacteroidia;Bacteroidales;Prevotellaceae;;")
-} else { 
+# If any OTU has a problem: report it on screen and in taxonomy-errors.tab, then stop
+if (nrow(tax_check$errors) > 0) {
+  dir.create("Taxonomic-Binning", showWarnings = FALSE)
+  write.table(tax_check$errors, file.path("Taxonomic-Binning", "taxonomy-errors.tab"),
+              sep = "\t", row.names = FALSE, quote = FALSE)
+  counts <- table(tax_check$n_found)
+  n_expected <- length(tax_check$levels)
+  stop("\n", nrow(tax_check$errors), " of ", length(tax_check$n_found), " OTU(s) have problems in the taxonomy column.\n",
+       "Expected ", n_expected, " levels (n_levels = ", n_levels, ", species = ", species, ").\n",
+       "Number of levels found: ", paste(paste0(names(counts), " levels in ", counts, " OTU(s)"), collapse = ", "), ".\n",
+       if (as.integer(names(counts)[which.max(counts)]) != n_expected)
+         "Most OTUs do not have the expected number of levels: please check the settings n_levels and species.\n",
+       "The OTUs to correct are listed in Taxonomic-Binning/taxonomy-errors.tab",
+       call. = FALSE)
+}
 
-# Delete the taxonomy row from the OTU-table
-otuFile <- otu_table[,c(1:dim(otu_table)[2] - 1)]
+# Show the levels used, with the most complete OTU as an example
+best <- which.max(rowSums(tax_check$fields != ""))
+message("Taxonomic levels used: ", length(tax_check$levels), ". Example OTU ", rownames(tax_check$fields)[best], ":\n",
+        paste(sprintf("  %-8s = %s", tax_check$levels, tax_check$fields[best, ]), collapse = "\n"))
 
-# Initialize empty dataframe
-taxonomy_new <- NULL
+# Delete the taxonomy column from the OTU-table
+otuFile <- data.matrix(otu_table[, -dim(otu_table)[2], drop = FALSE])
 
-for (i in 1:dim(otu_table)[1]) {
-  # Split taxonomic information in its taxonomic classes
-  # Kingdom - Phylum - Class - Family - Order - Genus
-  splitTax <- strsplit(x = as.character(taxonomy[i]), ";")
+# Names used for each taxonomic level
+level_info <- data.frame(
+  level  = c("Domain","Kingdom","Phylum","Class","Order","Family","Genus","Species"),
+  prefix = c("d__",   "k__",    "p__",   "c__",  "o__",  "f__",   "g__",  "s__"),
+  file   = c("Domain","Kingdom","Phyla", "Classes","Orders","Families","Genera","Species"),
+  title  = c("Domain","Kingdom","Phyla", "Class","Order","Family","Genus","Species"))
+level_info <- level_info[match(tax_check$levels, level_info$level),]
+n_tax <- nrow(level_info)
+
+###################     Replace missing levels by unknown_   ####################
+
+taxonomy_new <- tax_check$fields
+for (i in 1:dim(taxonomy_new)[1]) {
+  splitTax <- taxonomy_new[i,]
   
   # Save the position where the first empty string (sequence of characters) occurs
-  value <- which(splitTax[[1]] == "")[1]
+  value <- which(splitTax == "")[1]
   
   # Save the last known taxa information
-  lastTaxa = splitTax[[1]][value - 1]
+  lastTaxa = splitTax[value - 1]
   
   # Replace all empty values by the last taxa information and the prefix "unkown_"
-  splitTax <-replace(splitTax[[1]],splitTax[[1]] == "",paste("unknown_",lastTaxa))
- 
-  # Write new taxonomic information in the dataframe
-  taxonomy_new[i] <- list(splitTax)
+  taxonomy_new[i,] <- replace(splitTax, splitTax == "", paste("unknown_",lastTaxa))
 }
 
-# Adjust dataframe with modified taxonomic information
-taxonomy_new <- t(as.data.frame(taxonomy_new))
-row.names(taxonomy_new) <- row.names(otuFile)
-
-# Add level information to all taxonomies
-# For taxonomies related to kingdom level
-taxonomy_new[,1] <- sub("^","k__",taxonomy_new[,1])
-
-# For taxonomies related to phylum level
-taxonomy_new[,2] <- sub("^","p__",taxonomy_new[,2])
-
-# For taxonomies related to class level
-taxonomy_new[,3] <- sub("^","c__",taxonomy_new[,3])
-
-# For taxonomies related to order level
-taxonomy_new[,4] <- sub("^","o__",taxonomy_new[,4])
-
-# For taxonomies related to family level
-taxonomy_new[,5] <- sub("^","f__",taxonomy_new[,5])
-
-# For taxonomies related to genus level
-taxonomy_new[,6] <- sub("^","g__",taxonomy_new[,6])
-
-#################################################################################
-
-# Create list with taxonomic information for each taxonomy level
-class_list <-
-  list(
-    unique(taxonomy_new[,1]),unique(taxonomy_new[,2]),
-    unique(taxonomy_new[,3]), unique(taxonomy_new[,4]),
-    unique(taxonomy_new[,5]),unique(taxonomy_new[,6])
-  )
-
-# Clone the created list for further processing
-sample_list <- class_list
-list_length <- NULL
-
-# Iterate through all six taxonomy levels
-for (a in 1:6) {
-  
-  lis <- lapply(class_list[a], lapply, length)
-  names(lis)<-lapply(class_list[a],length)
-  
-  # Individual number of taxonomies for each taxonomic level
-  num_taxa <- as.integer(names(lis))
-  list_length[a] <- num_taxa
-  
-  # Iterate through taxonomic class specific taxonomies
-  for (b  in 1:num_taxa) {
-    
-    # Initialize list with the value zero for all taxonomies
-    sample_list[[a]][[b]] <- list(rep.int(0,dim(otuFile)[2]))
-    
-  }
+# Add level information to all taxonomies (e.g. "k__" for kingdom)
+for (m in 1:n_tax) {
+  taxonomy_new[,m] <- sub("^", level_info$prefix[m], taxonomy_new[,m])
 }
 
 #################################################################################
+######          Sum up relative abundances for each taxonomic group        ######
 #################################################################################
-# Save relative abundances of all samples for each taxonomy
 
-# Iterate through all OTUs
-for (i in 1:dim(otu_table)[1]) {
+# One table per taxonomic level: rows = taxa, columns = samples
+tax_tables <- list()
+for (m in 1:n_tax) {
+  # Rows (OTUs) of each taxonomic group, in order of first appearance
+  groups <- split(1:dim(otuFile)[1], factor(taxonomy_new[,m], levels = unique(taxonomy_new[,m])))
   
-  # Iterate through all taxonomic levels
-  for (m in 1:6) {
-    
-    # List of m-th taxonomies of i-th taxonomic levels (e.g. m = Kingdom, i = 4th OTU -> Clostridiales)
-    taxa_in_list <- list(taxonomy_new[i,])[[1]][m]
-    
-    # Record the current position in a list
-    position <- which(class_list[[m]] == taxa_in_list)
-    
-    # All rows with taxonomic information of n-th sample
-    matrix <- data.matrix(otuFile)
-    sub_sample_tax <-(subset(matrix,taxonomy_new[,m] == taxa_in_list))
-    
-    # Get the actual value out of the list (initialized with zero)
-    temp <- unlist(sample_list[[m]][[position]])
-    
-    # Calculate the summed up relative abundances for the particular taxonomic class for n-th sample
-    temp <- colSums(sub_sample_tax)
-    
-    # Replace values by new summed values
-    sample_list[[m]][[position]] <- list(temp)
-    
-  }
+  # Sum up the relative abundances of all OTUs of the same group, for each sample
+  sums <- lapply(groups, function(rows) colSums(otuFile[rows, , drop = FALSE]))
+  tab <- matrix(unlist(sums), ncol = dim(otuFile)[2], byrow = TRUE,
+                dimnames = list(names(groups), colnames(otuFile)))
+  
+  # Order table according to taxonomic name (all levels except the first one)
+  if (m > 1) tab <- tab[order(row.names(tab)), , drop = FALSE]
+  tax_tables[[m]] <- tab
 }
 
-#################################################################################
-######                         Write output                                ######
-#################################################################################
-
-# Generate tables for each taxonomic class
-
-##Kingdom table
-# Create table with taxonomic information (kingdom level)
-kingdom <-  matrix(unlist(sample_list[[1]]),nrow = dim(otuFile)[2],ncol = list_length[1],dimnames = list(names(otuFile),unlist(class_list[[1]])))
-kingdom <- (t(kingdom))
-
-##Phylum table
-# Create table with taxonomic information (phylum level)
-phyla <-matrix(unlist(sample_list[[2]]),nrow = dim(otuFile)[2],ncol = list_length[2],dimnames = list(names(otuFile),unlist(class_list[[2]])))
-phyla <- (t(phyla))
-
-# Order table according to taxonomic name (descending)
-phyla <- phyla[order(row.names(phyla)),]
-
-## Class table
-# Create table with taxonomic information (class level)
-classes <- matrix(unlist(sample_list[[3]]), nrow = dim(otuFile)[2], ncol = list_length[3], dimnames = list(names(otuFile),unlist(class_list[[3]])))
-classes <- (t(classes))
-
-# Order dataframe according to taxonomic name (descending)
-classes <- classes[order(row.names(classes)),]
-
-## Orders
-# create table with taxonomic information (Order)
-orders <-matrix(unlist(sample_list[[4]]),nrow = dim(otuFile)[2],ncol = list_length[4],dimnames = list(names(otuFile),unlist(class_list[[4]])))
-orders <- (t(orders))
-
-# Order dataframe according to taxonomic name (descending)
-orders <- orders[order(row.names(orders)),]
-
-## Family table
-# Create table with taxonomic information (family level)
-families <-matrix(unlist(sample_list[[5]]),nrow = dim(otuFile)[2],ncol = list_length[5],dimnames = list(names(otuFile),unlist(class_list[[5]])))
-families <- (t(families))
-
-# Order dataframe according to taxonomic name (descending)
-families <- families[order(row.names(families)),]
-
-## Genus level
-# Create table with taxonomic information (generum level)
-genera <- matrix(unlist(sample_list[[6]]),nrow = dim(otuFile)[2],ncol = list_length[6],dimnames = list(names(otuFile),unlist(class_list[[6]])))
-genera <- (t(genera))
-
-# Order dataframe according to taxonomic name (descending)
-genera <- genera[order(row.names(genera)),]
-
-# Merge all dataframes
-tax_summary <-rbind.data.frame(kingdom,phyla,classes,orders,families,genera)
+# Merge all tables
+tax_summary <- do.call(rbind.data.frame, tax_tables)
 
 # Identify duplicates and remove them
 tax_summary <- tax_summary[!duplicated(row.names(tax_summary)),]
@@ -257,14 +274,12 @@ dir.create("Taxonomic-Binning")
 setwd("Taxonomic-Binning")
 
 # Write output files for taxonomic composition of every sample
-write.table(kingdom,"0.Kingdom.all.tab",sep = "\t",col.names = NA)
-write.table(phyla,"1.Phyla.all.tab",sep = "\t",col.names = NA)
-write.table(classes,"2.Classes.all.tab",sep = "\t",col.names = NA)
-write.table(orders,"3.Orders.all.tab",sep = "\t",col.names = NA)
-write.table(families,"4.Families.all.tab",sep = "\t",col.names = NA)
-write.table(genera,"5.Genera.all.tab",sep = "\t",col.names = NA)
+for (m in 1:n_tax) {
+  write.table(tax_tables[[m]], paste0(m - 1, ".", level_info$file[m], ".all.tab"), sep = "\t", col.names = NA)
+}
 write.table(tax_summary,"tax.summary.all.tab",sep = "\t",col.names = NA)
 suppressWarnings (try(write.table(tax_summary, "../../5.Serial-Group-Comparisons/tax.summary.all.tab", sep ="\t",col.names = NA, quote = FALSE), silent =TRUE))
+
 
 #################################################################################
 ######                        Write Graphical Output                       ######
@@ -273,46 +288,16 @@ suppressWarnings (try(write.table(tax_summary, "../../5.Serial-Group-Comparisons
 pdf("taxonomic-overview.pdf")
 par(xpd=T, mar=par()$mar+c(0,0,0,9))
 
-#Kingdom
-#k_col=distinctColorPalette(dim(kingdom)[1])
-k_col=rainbow(dim(kingdom)[1])
-k_col=sample(k_col)
-barplot(kingdom,col=k_col, cex.names=0.5, ylab="cumulative relative abundance (%)", las=2, main="Taxonomic binning at Kingdom level")
-legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(kingdom)),cex=0.7,col = rev(k_col),pch = 16,pt.cex = 1.2)
-
-#Phyla
-#p_col=distinctColorPalette(dim(phyla)[1])
-p_col=rainbow(dim(phyla)[1])
-p_col=sample(p_col)
-barplot(phyla,col=p_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Phyla level")
-legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(phyla)),cex=0.7,col = rev(p_col),pch = 16,pt.cex = 1.2)
-
-#Classes
-c_col=rainbow(dim(classes)[1])
-c_col=sample(c_col)
-barplot(classes,col=c_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Class level")
-legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(classes)),cex=0.7,col = rev(c_col),pch = 16,pt.cex = 1.2)
-
-#Orders
-o_col=rainbow(dim(orders)[1])
-o_col=sample(o_col)
-barplot(orders,col=o_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Order level")
-legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(orders)),cex=0.7,col = rev(o_col),pch = 16,pt.cex = 1.2)
-
-#Families
-f_col=rainbow(dim(families)[1])
-f_col=sample(f_col)
-barplot(families,col=f_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Family level")
-legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(families)),cex=0.7,col = rev(f_col),pch = 16,pt.cex = 1.2)
-
-#Genera
-g_col=rainbow(dim(genera)[1])
-g_col=sample(g_col)
-barplot(genera,col=g_col, cex.names=0.5,ylab="cumulative relative abundance (%)",las=2, main="Taxonomic binning at Genus level")
-legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(genera)),cex=0.7,col = rev(g_col),pch = 16,pt.cex = 1.2)
+# One page per taxonomic level
+for (m in 1:n_tax) {
+  tab <- tax_tables[[m]]
+  t_col=rainbow(dim(tab)[1])
+  t_col=sample(t_col)
+  barplot(tab,col=t_col, cex.names=0.5, ylab="cumulative relative abundance (%)", las=2, main=paste0("Taxonomic binning at ", level_info$title[m], " level"))
+  legend(par('usr')[2], par('usr')[4], bty='n',rev(row.names(tab)),cex=0.7,col = rev(t_col),pch = 16,pt.cex = 1.2)
+}
 
 dev.off()
-}
 
 #################################################################################
 ######                           End of Script                             ######
