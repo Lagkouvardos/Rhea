@@ -57,7 +57,8 @@ setwd("D:/path/to/Rhea/4.Taxonomic-Binning") #<--- CHANGE ACCORDINGLY
 #' Please give the file name of the OTU-table containing relative abundances and taxonomic classification 
 otu_file<-"OTUs_Table-norm-rel-tax.tab"  #<--- CHANGE ACCORDINGLY
 
-#' Number of taxonomic levels before species: 6 (Kingdom...Genus) or 7 (Domain...Genus, new SILVA)
+#' Number of taxonomic levels before species: 6 (Kingdom...Genus) or 7 (Domain...Genus, SILVA 144 or newer)
+#' For further details read introduction comments
 n_levels <- 6  #<--- CHANGE ACCORDINGLY
 
 #' Does the taxonomy go down to species level? (TRUE or FALSE)
